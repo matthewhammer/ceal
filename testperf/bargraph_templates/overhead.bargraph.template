@@ -1,0 +1,18 @@
+[% PROCESS headers/bargraph -%]
+=table
+yformat=%1.1f
+ylabel=Overhead
+[% FOREACH a IN show_apps -%]
+[% name = a.0 -%]
+[% app  = apps.$name -%]
+# [% name %]
+[% a.1 -%] 
+[% FOREACH b IN show_bins %][% bin = b.0 -%]
+[% IF app.bins.$bin.defined -%]
+ [% app.bins.$bin.getd("fromscratch/time")
+   / app.bins.verf.getd("verifier/time-ave") -%]
+[% ELSE -%]
+ 0 [% END -%]
+[% END -%]
+
+[% END -%]

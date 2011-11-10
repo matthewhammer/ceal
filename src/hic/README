@@ -1,0 +1,15 @@
+Matthew Hammer
+hammer@mpi-sws.org
+circa Fall 2011
+
+HiC is a C preprocessor idea that I was toying around with, after
+getting tired of (mis)using the C preprocessor to implement
+functor-like patterns.
+
+In a nutshell, it's a C preprocessor whose source syntax combines
+OCaml module/functor syntax with C type- and function-declaration
+syntax.
+
+The output syntax is intended to be (automatically commented) C code,
+which contains provenance information about the (macro-expanded and
+erased) functor usage in the source syntax.

@@ -1,0 +1,20 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "overhead" 
+%]
+
+[% PROCESS headers/x_input_size %]
+
+set ylabel "Time (s)"
+set format y "%1.1f"
+
+set title "[% appname %] Overhead"
+
+plot \
+[% FOREACH dataset IN datasets -%]
+        "< paste \
+        [% dataset.path %]/input-size \
+        [% dataset.path %]/fromscratch/time \
+        [% verifier.path %]/verifier/time" using 1:($2/$3) w lp \
+                [% linewidth %] t "[% dataset.label %]"\
+        [% dataset.delim -%]
+[% END -%]

@@ -1,0 +1,18 @@
+[% PROCESS headers/bargraph -%]
+=table
+yformat=%1.1f
+ylabel=Max Live Space (norm by [% norm_bin %])
+[% FOREACH a IN show_apps -%]
+[% name = a.0 -%]
+[% app  = apps.$name -%]
+# [% name %]
+[% a.1 -%] 
+[% FOREACH b IN show_bins %][% bin = b.0 -%]
+[% IF app.bins.$bin.defined -%]
+ [% app.bins.$bin.getd("allinsrem/all-maxlive-bytes")
+   / app.bins.$norm_bin.getd("allinsrem/all-maxlive-bytes") -%]
+[% ELSE -%]
+ 0 [% END -%]
+[% END -%]
+
+[% END -%]

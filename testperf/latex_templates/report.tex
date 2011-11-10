@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{graphicx}
+
+\setlength{\hoffset}{-1in}
+\setlength{\voffset}{-1in}
+\setlength{\topmargin}{1in}
+\setlength{\headheight}{0pt}
+\setlength{\headsep}{0pt}
+\setlength{\textheight}{54.5pc}
+\begin{document}
+
+\newcommand{\plotwidth}{1.5in}
+\newcommand{\plotangle}{270}
+
+\newcommand{\setofplots}[1]{
+  \begin{tabular}{ccc}
+    \hline
+    \vspace*{0.10in}
+    \includegraphics[width=\plotwidth,angle=\plotangle]{#1/plots/fromscratch.ps}&
+    \includegraphics[width=\plotwidth,angle=\plotangle]{#1/plots/allinsrem.ps}&
+    \includegraphics[width=\plotwidth,angle=\plotangle]{#1/plots/maxlive.ps}
+    \\
+    \includegraphics[width=\plotwidth,angle=\plotangle]{#1/plots/overhead.ps}&
+    \includegraphics[width=\plotwidth,angle=\plotangle]{#1/plots/speedup.ps}
+    \vspace*{0.10in}
+%    \\    
+%    \hline
+  \end{tabular}%
+  %
+}
+
+{\bf \Large SLIME Evaluation Report (\today)}\\
+%
+\noindent
+%
+\begin{tabular}{ll}
+\input{setup-specs}
+\end{tabular}
+\\
+%
+\setofplots{map}
+\setofplots{filter}
+\setofplots{reverse}
+\setofplots{mergesort}
+\setofplots{minimum}
+\setofplots{sum}
+%\setofplots{quickhull}
+
+\end{document}

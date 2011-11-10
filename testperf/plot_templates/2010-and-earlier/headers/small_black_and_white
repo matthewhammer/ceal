@@ -1,0 +1,13 @@
+[% PROCESS headers/standard_comments %]
+
+set terminal postscript eps enhanced color "Helvetica" 18
+set size 0.55,0.55
+unset grid
+set output "[% output_dir %]/[% output_base %].ps"
+
+set xrange [0:[% max_x %]]
+
+set key Left left
+
+[% DEFAULT linewidth = "lw 5" %]
+set pointsize 2

@@ -1,0 +1,19 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "allinsrem" 
+%]
+
+[% PROCESS headers/x_input_size %]
+#[% PROCESS headers/y_scientific %]
+
+set ylabel "Time (ms)"
+
+set title "[% appname %] Ave. Update"
+
+
+plot \
+[% FOREACH dataset IN datasets -%]
+        "< paste [% dataset.path %]/input-size \
+                 [% dataset.path %]/allinsrem/time-ave" \
+        using 1:($2*1000) w lp [% linewidth %] t "[% dataset.label %]" \
+        [% dataset.delim -%]
+[% END -%]

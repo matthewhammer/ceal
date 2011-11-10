@@ -1,0 +1,68 @@
+README for evaluation scripts (in eval/scripts).
+Matthew Hammer <hammer@tti-c.org>
+------------------------------------
+
+At a high-level, these scripts are responsible for the following:
+
+ -- Running the test harness (bin/slime) for each application, for
+    each input size under consideration, and gathering the results on
+    disk.  This is the most time-consuming step since it requires
+    running each application many times, each time with many
+    change/propagation steps.  
+
+ -- Aggregating over-sampled data (i.e., if each input size has
+    several samples, this step creates averages).
+
+ -- Generating plots.
+ 
+ -- Generating a summary table.
+ 
+
+To see things all fit together, take a look at the following script:
+
+  automator.pl 
+
+It accepts the following options:
+
+ -g             --- gather data and store in datadir (see -d).  This
+                    is optional; if it is omitted, we assume datadir
+                    already contains data to process.
+
+ -d datadir     --- for gathering, data is stored here; otherwise,
+                    previously gathered data is read from here.
+
+ -s N           --- take N samples at each input-size
+
+ -f             --- force newly gathered data to overwrite existing
+                    data (by default datadir must be "fresh" to gather
+                    and store new data).
+
+Essentially, this script can be run in three different modes:
+
+
+1. Gather new data:
+
+  -- Command: automator.pl -s 1 -g -d foobar
+
+  Assuming foobar is a fresh directory, will do
+  everything for you, including gathering the data.  All data, plots,
+  tables, etc., will be put into the directory foobar.  In this
+  example, each "sample" will be taken once; use '-s N' to take each
+  sample N times.
+
+
+2. (Re-)Process existing data:
+
+  -- Command: automator.pl -s 1 -d foobar
+
+  Use existing data: Assumes the data has been gathered in foobar,
+  with each sample done once.  Will do everything given the
+  pre-gathered data (plots, tables, etc.) and put the results under
+  foobar.
+
+3. Overwrite old data with new data:
+
+  -- Command: automator.pl -s 1 -g -f -d foobar
+  
+  Force a redo: Simulates foobar being fresh, and does everything over
+  again.

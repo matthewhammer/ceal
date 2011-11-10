@@ -1,0 +1,6 @@
+list_copy         50k
+list_sum          50k
+list_minimum      50k
+list_quicksort    50k
+list_mergesort    50k
+list_quickhull_2d 50k

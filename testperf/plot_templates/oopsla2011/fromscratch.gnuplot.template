@@ -1,0 +1,27 @@
+[% PROCESS headers/datasets -%]
+
+[% PROCESS headers/small_black_and_white
+   output_base = "fromscratch" 
+-%]
+
+[% PROCESS headers/x_input_size -%]
+
+set ylabel "Time (s)"
+set format y "%1.1f"
+set title "[% appname %] From-Scratch"
+
+plot \
+[% FOREACH dataset IN fromscratch_datasets -%]
+[% SWITCH dataset.format -%]
+[% CASE 'hammer' -%]
+ "< paste [% dataset.dir %]/input-size \
+          [% dataset.dir %]/fromscratch/time" \
+          using 1:2 w lp [% linewidth %] t "[% dataset.label %]" ,\
+[% CASE 'acar' -%]
+ "< paste [% dataset.dir %]/InitialRun/full.dat" \
+          using 1:2 w lp [% linewidth %] t "[% dataset.label %]" ,\
+[% END -%]
+[% END -%]
+ "< paste [% verifier_dataset.dir %]/input-size \
+          [% verifier_dataset.dir %]/verifier/time-ave" \
+          using 1:2 w lp [% linewidth %] t "[% verifier_dataset.label %]"

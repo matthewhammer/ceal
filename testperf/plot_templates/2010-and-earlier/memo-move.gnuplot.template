@@ -1,0 +1,21 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "memo-move" 
+-%]
+
+[% PROCESS headers/x_input_size -%]
+
+set ylabel "Count / Input Size"
+set title "[% appname %] Memo Moves"
+set key Right right bottom
+
+
+plot \
+[% FOREACH dataset IN datasets -%]
+     "< paste [% dataset.path %]/input-size \
+              [% dataset.path %]/fromscratch/memo-move" \
+        using 1:($2/$1) w lp [% linewidth %] t "[% dataset.label %] fs",\
+     "< paste [% dataset.path %]/input-size \
+              [% dataset.path %]/fromscratch/memo-move \
+              [% dataset.path %]/allinsrem/memo-move" \
+        using 1:(($3-$2) / $1) w lp [% linewidth %] t "[% dataset.label %] cp"
+[% END -%]

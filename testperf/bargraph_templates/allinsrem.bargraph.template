@@ -1,0 +1,19 @@
+max=3.5
+[% PROCESS headers/bargraph -%]
+=table
+yformat=%1.1f
+ylabel=Update Time (norm. by [% norm_label %])
+[% FOREACH a IN show_apps -%]
+[% name = a.0 -%]
+[% app  = apps.$name -%]
+# [% name %]
+[% a.1 -%] 
+[% FOREACH b IN show_bins %][% bin = b.0 -%]
+[% IF app.bins.$bin.defined -%]
+ [% app.bins.$bin.getd("allinsrem/trnode-undo")
+   / app.bins.$norm_bin.getd("allinsrem/trnode-undo") -%]
+[% ELSE -%]
+ 0 [% END -%]
+[% END -%]
+
+[% END -%]

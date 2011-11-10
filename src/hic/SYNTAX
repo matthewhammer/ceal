@@ -1,0 +1,47 @@
+
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
+(* Concrete Syntax *)
+
+definition ::= 
+  | module X { ( module-name : module-type ) } [ : module-type ] = module-expr
+  | module type X = module-type
+  | open module-path
+  | include module-path
+  | type-definition
+  
+module-expr ::=
+  | ( module-expr : module-type )
+  | functor ( module-name : module-type ) -> module-expr
+  | module-expr ( module-expr )
+  | \{ { definition [;] | c-code-quoted } \} 
+  | ( module-expr )
+  | module-path 
+
+module-type ::=
+  | functor ( module-name : module-type ) -> module-expr
+  | \{ { definition [;] } \}
+  | ( module-type )
+  | module-path 
+
+module-path ::=  ...
+            
+
+module-def ::=
+ | type type-name = c-type
+ | qual qual-name = c-qual
+
+module-sig ::=
+ | type type-name
+ | qual qual-name
+
+
+module-name ::= ID
+type-name   ::= ID
+qual-name   ::= ID
+
+
+c-code-quoted ::= >>/ ....  /<<
+c-type        ::= ...
+c-qual        ::= { ID }
+
+*)

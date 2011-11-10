@@ -1,0 +1,90 @@
+[% 
+   dir_2010_10_18="/tmp/srv-53-02.ceal-results.2010-10-18.t01/testperf/results/"
+
+#   selfadjusting_datasets = [ 
+#      {dir="$data_dir/aoz"             label='2010' },
+#   ]
+
+#   selfadjusting_datasets = [ 
+#      {dir="$data_dir/aaz"             label='aaz' },
+#      {dir="$data_dir/aoz"             label='aoz' },
+#   ]
+
+#   selfadjusting_datasets = [ 
+#      {dir="$dir_2010_10_18/$app/slow" label='aaa' },
+#      {dir="$data_dir/aaz"             label='aaz' },
+#      {dir="$data_dir/aoz"             label='aoz' },
+#   ]
+
+    selfadjusting_datasets = [ 
+#      {dir="$data_dir/implicit"      label='implicit'      format='hammer' },
+#      {dir="$data_dir/foreign-splay" label='foreign-splay' format='hammer' },
+      {dir="$data_dir/foreign-ring"  label='SASM'  format='hammer' },
+   ]
+   
+   verifier_dataset = { dir="$data_dir/verf" label="Conv" }
+%]
+
+[% 
+  # dir_pldi09="/home/hammer/oopsla2011-data/srv-53-02.slime-results.2010-10-11.s16/" 
+  # pldi09_datasets=[]
+  
+  dir_pldi09="/home/hammer/oopsla2011-data/2011-04-02--srv-53-08--plots--slime/eval/results--2011-04-02" 
+  pldi09_datasets=[]
+
+   dir_deltaml="/home/hammer/oopsla2011-data/baraboo.deltaml-results.2010-11-10"
+   deltaml_datasets=[]
+%]
+
+[% SWITCH app %]   
+
+[% CASE 'list_map' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/map", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/map", label='DeltaML',format='acar'}] %]
+
+[% CASE 'list_filter' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/filter", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/filter", label='DeltaML',format='acar'}] %]
+
+[% CASE 'list_reverse' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/reverse", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/reverse", label='DeltaML',format='acar'}] %]
+
+[% CASE 'list_quicksort' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/quicksort", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/qsort-string", label='DeltaML',format='acar'}] %]
+
+[% CASE 'list_mergesort' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/mergesort", label='CEAL',format='hammer'}] %]
+
+[% CASE 'list_minimum' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/minimum", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/minimum", label='DeltaML',format='acar'}] %]
+
+[% CASE 'list_sum' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/sum", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/sum", label='DeltaML',format='acar'}] %]
+
+[% CASE 'geom2d_quickhull' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/quickhull", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/quick-hull", label='DeltaML',format='acar'}] %]
+
+[% CASE 'geom2d_diameter' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/diameter", label='CEAL',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/diameter", label='DeltaML',format='acar'}] %]
+
+[% CASE 'geom2d_distance' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/distance", label='CEAL',format='hammer'}] %]
+
+[% CASE 'exptree' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/exptrees", label='CEAL',format='hammer'}] %]
+
+[% END %]  
+
+[%
+   selfadjusting_datasets = selfadjusting_datasets.merge(pldi09_datasets)
+   selfadjusting_datasets = deltaml_datasets.merge(selfadjusting_datasets)
+
+   fromscratch_datasets = selfadjusting_datasets
+   allinsrem_datasets   = selfadjusting_datasets
+%]

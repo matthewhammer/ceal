@@ -1,0 +1,40 @@
+[% show_bins=[
+ #  ['all-opt',   'all-opt'],
+ #  ['no-zwzr',   'no-zwzr'],
+ #  ['no-owcr',   'no-owcr'],
+    ['foreign-ring',           'opt'],
+    ['foreign-ring-no-seldps', 'no-seldps'],
+    ['foreign-ring-no-share',  'no-share'],
+ #    ['implicit',           'opt'],
+ #    ['implicit-no-seldps', 'no-seldps'],
+ #    ['implicit-splay-no-share',  'no-share'],
+   ]
+-%]
+[% norm_bin="foreign-ring"
+   norm_label="opt"
+-%]
+[% show_apps=[
+   ['exptree_eval',        'exptrees'],
+   ['list_map'             'map'],
+   ['list_reverse',        'reverse'],
+   ['list_filter',         'filter'],
+#   ['list_sum',            'sum'],
+   ['list_minimum',        'minimum'],
+   ['list_quicksort',      'quicksort'],
+   ['list_mergesort',      'mergesort'],   
+   ['geom2d_quickhull',    'quickhull'],
+   ['geom2d_diameter',     'diameter'],
+   ['geom2d_distance',     'distance'],
+#   ['sparsemat_transpose', 'smat-transpose'],
+#   ['sparsemat_vec_mult',  'smat-svec-mult'],
+#   ['sparsemat_mat_mult',  'smat-smat-mult'],
+   ]
+-%]
+=cluster[% FOREACH b IN show_bins -%]
+[% NEXT IF isverf(b.key) -%]
+;[% b.1 -%]
+[% END %]
+=arithmean
+#max=3.0
+font=Helvetica Bold
+bbfudge=0.3

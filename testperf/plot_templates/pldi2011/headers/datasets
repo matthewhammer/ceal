@@ -1,0 +1,85 @@
+[% 
+   dir_2010_10_18="/tmp/srv-53-02.ceal-results.2010-10-18.t01/testperf/results/"
+
+#   selfadjusting_datasets = [ 
+#      {dir="$data_dir/aoz"             label='2010' },
+#   ]
+
+#   selfadjusting_datasets = [ 
+#      {dir="$data_dir/aaz"             label='aaz' },
+#      {dir="$data_dir/aoz"             label='aoz' },
+#   ]
+
+#   selfadjusting_datasets = [ 
+#      {dir="$dir_2010_10_18/$app/slow" label='aaa' },
+#      {dir="$data_dir/aaz"             label='aaz' },
+#      {dir="$data_dir/aoz"             label='aoz' },
+#   ]
+
+    selfadjusting_datasets = [ 
+      {dir="$data_dir/all-opt" label='all-opt' format='hammer' },
+   ]
+   
+   verifier_dataset = { dir="$data_dir/verf" label="verf" }
+%]
+
+[% 
+   dir_pldi09="/local/hammer/srv-53-02.slime-results.2010-10-11.s16/" 
+   pldi09_datasets=[]
+
+   dir_deltaml="/local/hammer/baraboo.deltaml-results.2010-11-10"
+   deltaml_datasets=[]
+%]
+
+[% SWITCH app %]   
+
+[% CASE 'list_map' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/map", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/map", label='deltaml',format='acar'}] %]
+
+[% CASE 'list_filter' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/filter", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/filter", label='deltaml',format='acar'}] %]
+
+[% CASE 'list_reverse' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/reverse", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/reverse", label='deltaml',format='acar'}] %]
+
+[% CASE 'list_quicksort' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/quicksort", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/qsort-string", label='deltaml',format='acar'}] %]
+
+[% CASE 'list_mergesort' %]
+[% pldi09_datasets = [{dir="$dir_deltaml/mergesort", label='2009',format='hammer'}] %]
+
+[% CASE 'list_minimum' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/minimum", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/minimum", label='deltaml',format='acar'}] %]
+
+[% CASE 'list_sum' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/sum", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/sum", label='deltaml',format='acar'}] %]
+
+[% CASE 'geom2d_quickhull' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/quickhull", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/quick-hull", label='deltaml',format='acar'}] %]
+
+[% CASE 'geom2d_diameter' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/diameter", label='2009',format='hammer'}] %]
+[% deltaml_datasets = [{dir="$dir_deltaml/diameter", label='deltaml',format='acar'}] %]
+
+[% CASE 'geom2d_distance' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/distance", label='2009',format='hammer'}] %]
+
+[% CASE 'exptree' %]
+[% pldi09_datasets = [{dir="$dir_pldi09/exptrees", label='2009',format='hammer'}] %]
+
+[% END %]  
+
+[%
+   # selfadjusting_datasets = selfadjusting_datasets.merge(pldi09_datasets)
+   selfadjusting_datasets = deltaml_datasets.merge(selfadjusting_datasets)
+
+   fromscratch_datasets = selfadjusting_datasets
+   allinsrem_datasets   = selfadjusting_datasets
+%]

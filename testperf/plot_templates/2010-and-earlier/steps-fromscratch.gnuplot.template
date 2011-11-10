@@ -1,0 +1,16 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "steps-fromscratch"
+-%]
+
+[% PROCESS headers/x_input_size -%]
+[% PROCESS headers/y_scientific %]
+
+set ylabel "Steps"
+set title "[% appname %] (Scratch)"
+
+plot \
+[% FOREACH dataset IN datasets -%]
+     "< paste [% dataset.path %]/input-size \
+              [% dataset.path %]/fromscratch/trnode-new" \
+        using 1:2 w lp [% linewidth %] t "[% dataset.label %]"
+[% END -%]

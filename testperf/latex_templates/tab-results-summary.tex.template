@@ -1,0 +1,86 @@
+%% WARNING: THIS FILE WAS AUTO-GENERATED.
+%% Your manual edits could be overwritten.
+%% 
+%% Note: \usepackage{booktabs}
+%%
+[% tabbin='foreign-ring' -%]
+[% rows=[
+   ['exptree_eval',        'exptrees'],
+   ['list_map'             'map'],
+   ['list_reverse',        'reverse'],
+   ['list_filter',         'filter'],
+#   ['list_sum',            'sum'],
+   ['list_minimum',        'minimum'],
+   ['list_quicksort',      'quicksort'],
+   ['list_mergesort',      'mergesort'],   
+   ['geom2d_quickhull',    'quickhull'],
+   ['geom2d_diameter',     'diameter'],
+   ['geom2d_distance',     'distance'],
+#   ['sparsemat_transpose', 'smat-transpose'],
+#   ['sparsemat_vec_mult',  'smat-svec-mult'],
+#   ['sparsemat_mat_mult',  'smat-smat-mult'],
+   ]
+-%]
+\begin{tabular}{lcrrrrr}
+\toprule
+{\textsf{\textbf{Benchmark}}}
+&
+{\textsf{\textbf{N}}}
+&
+{\textsf{\textbf{Conv}}}
+&
+{\textsf{\textbf{FS}}}
+&
+{\textsf{\textbf{Overhead}}}
+&
+{\textsf{\textbf{Ave.~Update}}}
+&
+{\textsf{\textbf{Speed-up}}}
+\\
+& & 
+({sec})
+& 
+({sec})
+& 
+({\footnotesize \textsf{\textbf{Conv} / \textbf{FS}}})
+&
+({sec})
+&
+({\footnotesize \textsf{{\textbf{AU} / \textbf{Conv}}}})
+\\
+\midrule
+%%%
+[% FOREACH row IN rows -%]
+[% longname  = row.0 -%]
+[% shortname = row.1 -%]
+[% bin       = apps.$longname.bins.$tabbin -%]
+[% verf      = apps.$longname.bins.verf    -%]
+% [% longname %]
+\textsf{[% shortname %]} 
+&
+% Input size
+[% format_input_size(bin.getd("input-size")) %]
+&
+% Conventional
+[% format_time_sec(verf.getd("verifier/time-ave")) %]
+&
+% From-scratch 
+[% format_time_sec(bin.getd("fromscratch/time")) %]
+&
+% Overhead
+[% format_overhead(bin.getd("fromscratch/time"), verf.getd("verifier/time-ave")) %]
+&
+% Average Update
+[% format_time_sci(bin.getd("allinsrem/time-ave")) %]
+&
+% Speed-up
+[% format_speedup(verf.getd("verifier/time-ave"), bin.getd("allinsrem/time-ave")) %]
+%%
+%% &
+%%% Space
+%% [% format_space(bin.getd("allinsrem/all-maxlive-bytes")) %]
+\\
+[% END -%]
+%%%
+\bottomrule
+\end{tabular}

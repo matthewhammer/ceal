@@ -1,0 +1,19 @@
+exptree_eval        100k
+#
+geom2d_diameter     100k
+geom2d_distance     100k
+geom2d_quickhull    100k
+#
+list_quicksort      100k
+list_mergesort      100k
+#
+list_minimum        100k
+list_sum            100k
+#
+list_map            100k
+list_filter         100k
+list_reverse        100k
+#
+sparsemat_transpose 100k
+sparsemat_vec_mult  10k
+sparsemat_mat_mult  100

@@ -1,0 +1,19 @@
+max=2.0
+[% PROCESS headers/bargraph -%]
+=table
+yformat=%1.1f
+ylabel=From-Scratch Time (norm. by [% norm_label %])
+[% FOREACH a IN show_apps -%]
+[% name = a.0 -%]
+[% app  = apps.$name -%]
+# [% name %]
+[% a.1 -%] 
+[% FOREACH b IN show_bins %][% bin = b.0 -%]
+[% IF app.bins.$bin.defined -%]
+ [% app.bins.$bin.getd("fromscratch/time")
+   / app.bins.$norm_bin.getd("fromscratch/time") -%]
+[% ELSE -%]
+ 0 [% END -%]
+[% END -%]
+
+[% END -%]

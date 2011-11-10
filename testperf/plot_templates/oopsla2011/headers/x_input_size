@@ -1,0 +1,3 @@
+set xlabel "Input Size"
+#set format x "%.1s%c"
+set xtics [% xtics %]

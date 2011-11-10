@@ -1,0 +1,17 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "maxlive" 
+%]
+
+[% PROCESS headers/x_input_size %]
+
+set ylabel "Max Live (MB)"
+
+set title "[% appname %] Max Live"
+
+plot \
+[% FOREACH dataset IN datasets -%]
+        "< paste [% dataset.path %]/input-size \
+                 [% dataset.path %]/allinsrem/all-maxlive-bytes" \
+        using 1:($2/(2**20)) w lp [% linewidth %] t "[% dataset.label %]" \
+        [% dataset.delim -%]
+[% END -%]

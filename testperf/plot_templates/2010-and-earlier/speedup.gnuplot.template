@@ -1,0 +1,20 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "speedup" 
+%]
+
+[% PROCESS headers/x_input_size %]
+[% PROCESS headers/y_scientific %]
+
+set ylabel "Speedup"
+
+set title "[% appname %] Speedup"
+
+plot \
+[% FOREACH dataset IN datasets -%]
+        "< paste \
+        [% dataset.path %]/input-size \
+        [% verifier.path %]/verifier/time \
+        [% dataset.path %]/allinsrem/time-ave" using 1:($2/$3) w lp \
+                [% linewidth %] t "[% dataset.label %]"\
+        [% dataset.delim -%]
+[% END -%]

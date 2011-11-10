@@ -1,0 +1,22 @@
+[% PROCESS headers/small_black_and_white
+   output_base = "steps-allinsrem" 
+%]
+
+[% PROCESS headers/x_input_size %]
+#[% PROCESS headers/y_scientific %]
+
+set ylabel "Steps"
+
+set title "[% appname %] (Ave. Update)"
+
+plot \
+[% FOREACH dataset IN datasets -%]
+        "< paste [% dataset.path %]/input-size \
+                 [% dataset.path %]/allinsrem/trnode-new \
+                 [% dataset.path %]/allinsrem/trnode-initial \
+                 [% dataset.path %]/allinsrem/trnode-undo  \
+                 [% dataset.path %]/allinsrem/propagations"  \
+        using 1:(((($2 - $3) + $4) / $5)) w lp [% linewidth %] t "[% dataset.label %]" \
+        [% dataset.delim -%]
+[% END -%]
+
