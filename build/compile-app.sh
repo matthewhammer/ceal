@@ -42,6 +42,8 @@ function compile_binary {
     echo "#include \"$APP.c\""                    >> $SRC_PATH/.$APP.c
 
     ./bin/cilly $CEAL_FLAGS \
+        -DCEAL_APP_SRC_PATH=\"$SRC_PATH\" \
+        -DCEAL_APP_BIN_PATH=\"$BIN_PATH\" \
         $CILLY_FLAGS \
         $FIX_MAC_BLOCKS \
         $EXTRA_CILLY_FLAGS \
