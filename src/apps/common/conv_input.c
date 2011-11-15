@@ -22,7 +22,7 @@ void cealtesthook_input_generate(long size) {
    * the pixels with right color values, ideally get parts
    * of a huge image
    */
-  //memset(conv_input, 0, sizeof(pixel_t) * img_size);
+  memset(conv_input, 0, sizeof(pixel_t) * img_size);
   loadRawImage( "lena.raw", conv_input_size, conv_input_size, conv_input);
 }
 
