@@ -16,6 +16,16 @@ typedef long pixel_t;
 typedef double kernel_t;
 typedef unsigned char raw_t;
 
+raw_t fread_raw(FILE* stream) foreign_c {
+  raw_t data;
+  fread(&data, sizeof(raw_t), 1, stream);
+  return data;
+}
+
+void fwrite_raw(FILE* stream, raw_t data) foreign_c {
+  fwrite(&data, sizeof(raw_t), 1, stream);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // load 8-bit RAW image
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,8 +43,9 @@ void loadRawImage(char *fileName, int x, int y, pixel_t *data)
 
     // read pixel data
     int i, j;
-    for ( i = 0; i < x*y; i++){
-        fread(data+i, sizeof(raw_t), 1, fp);
+    for ( i = 0; i < ROW*COL; i++){
+      data[i] = (pixel_t) fread_raw(fp);
+      //fread(data+i, sizeof(raw_t), 1, fp);
     }
     //fread(data, sizeof(pixel_t), x*y, fp);
     fclose(fp);
@@ -57,8 +68,8 @@ void writeRawImage(char *fileName, int x, int y, pixel_t *data)
     }
 
     int i, j;
-    for ( i = 0; i < x*y; i++){
-        fwrite(data+i, sizeof(raw_t), 1, fp);
+    for ( i = 0; i < ROW*COL; i++){
+      fwrite_raw(fp, data[i]);
     }
     // write pixel data
     //fwrite(data, sizeof(pixel_t), x*y, fp);

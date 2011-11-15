@@ -13,11 +13,11 @@ pixel_t* conv_output_core;
 void cealtesthook_output_print(FILE* file, int i) {
     if(i == 0)
     {
-        writeRawImage( "lena_conv_core.raw", conv_input_size, conv_input_size, conv_output_core);
+        writeRawImage( CEAL_APP_SRC_PATH "/lena_conv_core.raw", conv_input_size, conv_input_size, conv_output_core);
     }
     else if (i == 1)
     {
-        writeRawImage( "lena_conv_verf.raw", conv_input_size, conv_input_size, conv_output_verf);
+        writeRawImage( CEAL_APP_SRC_PATH "/lena_conv_verf.raw", conv_input_size, conv_input_size, conv_output_verf);
     }
     else
         abort();

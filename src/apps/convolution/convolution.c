@@ -31,15 +31,20 @@ static void convolution(pixel_t* in, pixel_t* out)
      *no need to write it out yet)*/
 }
 
-static void convolution_core(pixel_t* in, pixel_t* out){
+static void convolution_core(pixel_t* in, pixel_t* out){  
     convolution( in, out);
 }
 
 void cealtesthook_run_core(){
     conv_output_core = malloc(sizeof(pixel_t)*conv_input_size * conv_input_size);
+    memset(conv_output_core, 0, sizeof(pixel_t)*conv_input_size * conv_input_size);
+
+  /*conv_output_core = alloc(pixel_t[conv_input_size * conv_input_size]);*/
+  
     core(convolution_core)(conv_input, conv_output_core);
 }
 
 void cealtesthook_run_verf(){
-    convolution( conv_input, conv_output_core);
+  memset(conv_output_verf, 0, sizeof(pixel_t)*conv_input_size * conv_input_size);
+  convolution( conv_input, conv_output_verf);
 }

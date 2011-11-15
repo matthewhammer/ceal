@@ -29,6 +29,8 @@ void convolve2DSlow(pixel_t* in, pixel_t* out,long dataSizeX, long  dataSizeY,
 
     for(i=0; i < dataSizeY; ++i)                // rows
     {
+      printf("done with row %d\n", i);
+      
         for(j=0; j < dataSizeX; ++j)            // columns
         {
             sum = 0;                            // init to 0 before sum

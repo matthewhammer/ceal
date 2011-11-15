@@ -10,7 +10,7 @@
 
 static pixel_t* conv_input;
 static long conv_input_size;
-static int index;
+static long index;
 
 void cealtesthook_input_generate(long size) {
   conv_input_size = size;
@@ -23,7 +23,7 @@ void cealtesthook_input_generate(long size) {
    * of a huge image
    */
   memset(conv_input, 0, sizeof(pixel_t) * img_size);
-  loadRawImage( "lena.raw", conv_input_size, conv_input_size, conv_input);
+  loadRawImage( CEAL_APP_SRC_PATH "/lena.raw", conv_input_size, conv_input_size, conv_input);
 }
 
 void cealtesthook_input_print(FILE* file) {
