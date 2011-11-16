@@ -6,21 +6,29 @@ primitives that allow programmers to write self-adjusting computations
 in a manner similar to conventional C programming. CEAL code can both
 call and be called by conventional C code.
 
-
 == People ==
 
-The CEAL project is supervised by Umut A Acar (umut@mpi-sws.org), and
-its primary developer is Matthew Hammer (hammer@mpi-sws.org).
+The CEAL project is supervised by Umut A Acar (http://umut.mpi-sws.org), and
+its primary developer is Matthew Hammer (http://mpi-sws.org/~hammer).
 
 Where applicable, the CEAL source code should contain relevant author
 information on a file-by-file basis. As an overview, the following
 people have contributed code to the current system:
 
-Ezgi Cicek (Benchmark applications)
-Yan Chen (Run-time support for imperative memory)
-Reinhard Munz (Benchmark applications)
-Mike Rainey (Benchmark applications)
+Ezgi Cicek (Benchmark applications) 
+-- http://wp.mpi-sws.org/ecicek/ 
 
+Yan Chen (Run-time support for imperative memory) 
+-- http://www.mpi-sws.org/~chenyan/
+
+Reinhard Munz (Benchmark applications) 
+-- http://sites.google.com/site/munzreinhard/
+
+Mike Rainey (Benchmark applications) 
+-- http://www.mpi-sws.org/~mrainey/
+
+CEAL is copyrighted by its authors. 
+It is licensed under the GNU Public License, version 3.0.
 
 == Wiki Resources ==
 
