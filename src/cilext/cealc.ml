@@ -10315,12 +10315,12 @@ module Tv_signals = struct
         W.walk_middle = begin function
           | (G.Let_simp (v, G.Low (low_op, args), ppt)) as m -> 
               begin fun a -> a, match low_op with
-                | L.Propagate -> ( fun z -> 
+                | L.Propagate -> (*( fun z -> 
                                      begin tvsig ppt "propagate_begin" []
-                                       **> B.cons_middle m
+                                   **> *) B.cons_middle m (*
                                        **> tvsig ppt "propagate_end" []
                                        **> z
-                                     end )
+                                     end ) *)
                     
                 | _ -> (fun z -> 
                           begin B.cons_middle m 
