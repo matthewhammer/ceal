@@ -1,103 +1,37 @@
-File: README
-Author: Matthew Hammer <hammer@mpi-sws.org>
+= CEAL README =
 
-This README file provides a rough guide to getting started with CEAL
-and our associated tools, including: 
-
-(1) how to build the CEAL compiler, 
-(2) how to build CEAL applications, 
-(3) how to run CEAL applications 
-(4) how to start writing new CEAL applications, and 
-(5) how to measure the performance of CEAL applications.
-
-This README file is very short and terse.  There are a few more
-details available in wiki form, here:
-
-  https://wiki.mpi-sws.org/pls/CEAL_programming_howto
-
-For further information, please email ceal-dev@mpi-sws.org
+CEAL is a C-based language for self-adjusting computation. CEAL
+extends (a somewhat restricted subset of) C with a small set of
+primitives that allow programmers to write self-adjusting computations
+in a manner similar to conventional C programming. CEAL code can both
+call and be called by conventional C code.
 
 
-(1). Build CIL with CEAL extensions
+== People ==
 
-  $ pushd cil
-  $ ./configure
-  $ make
-  $ popd
+The CEAL project is supervised by Umut A Acar (umut@mpi-sws.org), and
+its primary developer is Matthew Hammer (hammer@mpi-sws.org).
 
-(2). Build the CEAL applications
+Where applicable, the CEAL source code should contain relevant author
+information on a file-by-file basis. As an overview, the following
+people have contributed code to the current system:
 
-  $ pushd build
-  $ ./compile-apps.pl
-  $ popd
+Ezgi Cicek (Benchmark applications)
+Yan Chen (Run-time support for imperative memory)
+Reinhard Munz (Benchmark applications)
+Mike Rainey (Benchmark applications)
 
-(3). Run the CEAL applications
 
-  $ cd bin/apps/
+== Wiki Resources ==
 
-  Each application has a directory (of the same name).  The
-  self-adjusting binary is put in this directory.  The verification
-  binary (the conventional version of the application) is put into a
-  sub-directory named verf.  For example:
-  
-  For the application list_copy, the (single-file) source program is:
+We intend to provide complete manuals, how-tos and other user support
+in wiki form. The homepage for CEAL is the following:
 
-     ./src/apps/list_copy/list_copy.c
+ * https://wiki.mpi-sws.org/pls/CEAL
 
-  The self-adjusting binary is placed here:
+Other useful pages include:
 
-    ./bin/apps/list_copy/list_copy
+ * https://wiki.mpi-sws.org/pls/CEAL_manual
+ * https://wiki.mpi-sws.org/pls/CEAL_programming_howto
+ * https://wiki.mpi-sws.org/pls/CEAL_glossary
 
-  The verification binary is placed here:
-
-    ./bin/apps/list_copy/verf/list_copy
-
-(4). Creating a new application:
-
-  $ pushd ./src/apps
-  $ mkdir myappname
-  $ echo "#include \"main.c\"" > myappname/myappname.c
-  $ popd && pushd build
-  $ ./compile-app.sh myappname
-
-  You will get linker error messages for set of missing functions.
-  Each function is named cealtesthook_X for some identifier suffix X.
-  Each such function is called by our test harness in order to conduct
-  performance measurements and/or provide human-readable display of
-  the application's input and output.
-
-  Take a look at a simple example application to see how these
-  functions are typically implemented (e.g., list_copy).  Assuming
-  that the input and output data structures are easy to iterate, these
-  functions are usually simple to implement.
-
-(5). Measure the performance of applications: 
-     Collect data, make plots & tables.
-
-  $ cd ./testperf/scripts
-  $ ./automator.pl -g -s 1 -d ../results-DATE 
-
-  These scripts require Perl.  They also require the Template Toolkit
-  (see Ubutu/Debian package: libtemplate-perl).
-
-  The data gathered, plots drawn and tables produced are governed by
-  these files (auto-generated from defaults upon the first run):
-
-  $ cat gather-data.local
-  $ cat plot-data.local
-  $ cat summarize-data.local
-  
-  The files can be customized within either the scripts directory or
-  within the target directory (e.g., "../results-DATE" above).  The
-  target directory is checked first, then the scripts directory.
-
-  Each file lists an application name and an input-size.  For
-  gathering and plotting data, the listed input size is the maximum
-  size used and we interpolate successively increasing sizes up to
-  this size.  For summarizing, the size is the one included in a
-  summary table (other sizes are ignored).  
-
-  In all cases, the number of samples at each size is fixed in an
-  orthoginal way (with -s and a separate parameter, e.g., 1 is used
-  above); all data points are sampled at this fixed rate (across all
-  applications).
