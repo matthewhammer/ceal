@@ -7,9 +7,10 @@
 #define print(FMT,...) printf("%s:%d: " FMT "\n", __FUNCTION__,__LINE__,##__VA_ARGS__)
 
 // #define BASIC_VERSION
-#define SEPARATE_FUN_VERSION
+//#define SEPARATE_FUN_VERSION
 // #define CUT_BLOCK_VERSION
-// #define CUT_EXPR_VERSION
+ #define CUT_EXPR_VERSION
+// #define CUT_EXPR_VERSION_2
 // #define MEMO_STMT_VERSION
 
 
@@ -45,7 +46,36 @@ void max_of_squares(long* in1, long* in2, long* out) {
   *out = (max * max);
 }
 
+#elif defined CUT_BLOCK_VERSION
+void max_of_squares(long* in1, long* in2, long* out) {
+  long max;
+
+  cut {
+    if(labs(*in1) > labs(*in2)) {
+      max = labs(*in1);
+    }
+    else {
+      max = labs(*in2);
+    }
+  }
+
+  print("max is %ld, computing its square..", max);
+  *out = (max * max);
+}
+
 #elif defined CUT_EXPR_VERSION
+
+/* Mustafa Zengin pointed out the following subtly to me: on nearly
+   all input changes, this code avoids the needless reevaluation of
+   squaring `max`.  However, even so, there are still many cases where
+   it doesn't: whenever the max of the two inputs changes sign, from
+   positive to negative (or vice versa), the second pointer
+   dereference of that input value is affected.  Suppose, for
+   instance, that the input values are `1` and `2`, and then the
+   second value is changed from `2` to `-2`.  Then read in the
+   statement `max = labs(*in2)` is affected and will be
+   reevaluated.  */
+
 void max_of_squares(long* in1, long* in2, long* out) {
   long max;
 
@@ -62,17 +92,18 @@ void max_of_squares(long* in1, long* in2, long* out) {
   *out = (max * max);
 }
 
-#elif defined CUT_BLOCK_VERSION
+#elif defined CUT_EXPR_VERSION_2
+
 void max_of_squares(long* in1, long* in2, long* out) {
   long max;
 
-  cut {
-    if(labs(*in1) > labs(*in2)) {
-      max = labs(*in1);
-    }
-    else {
-      max = labs(*in2);
-    }
+  /* The cast to long is needed by CEAL for obscure reasons.
+     (See also: the 'minimum-modref-size' restriction). */
+  if(cut( (long) (labs(*in1) > labs(*in2)) )) {
+    max = cut(labs(*in1));
+  }
+  else {
+    max = cut(labs(*in2));
   }
 
   print("max is %ld, computing its square..", max);
@@ -127,6 +158,14 @@ int main(int argc, char** argv) {
 
   /* Mutate the input. */     
   y = 3;
+
+  /* Invoke change propagation. */
+  print("running change propagation..");
+  propagate;
+  print_inout(&x, &y, &z);
+
+  /* Mutate the input. */     
+  x = 4;
 
   /* Invoke change propagation. */
   print("running change propagation..");
