@@ -1,7 +1,11 @@
 /*
-Copyright 2008-2011 
-Matthew A. Hammer <hammer@mpi-sws.org>
-Yan Chen <chenyan@mpi-sws.org>
+Copyright 2008-2011
+CEAL Project -- Umut A. Acar and Matthew A. Hammer
+
+File: modref_functor_awar.h
+Author(s):
+  Matthew A. Hammer <hammer@mpi-sws.org>
+  Yan Chen <chenyan@mpi-sws.org>
 
 This file is part of the CEAL language implementation (CEAL for short).
 
@@ -18,11 +22,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with CEAL.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-/*
- * Matthew Hammer <hammer@ttic.edu>
- * Yan Chen       <chenyan@ttic.edu>
- */
 
 /* Splay-Tree-based Modrefs --- Suitable for modrefs that are written
    and read an arbitrary number of times. */

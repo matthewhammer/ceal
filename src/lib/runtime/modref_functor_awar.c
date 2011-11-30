@@ -1,7 +1,11 @@
 /*
-Copyright 2008-2011 
-Matthew A. Hammer <hammer@mpi-sws.org>
-Yan Chen <chenyan@mpi-sws.org>
+Copyright 2008-2011
+CEAL Project -- Umut A. Acar and Matthew A. Hammer
+
+File: modref_functor_awar.c
+Authors:
+  Matthew A. Hammer <hammer@mpi-sws.org>
+  Yan Chen <chenyan@mpi-sws.org>
 
 This file is part of the CEAL language implementation (CEAL for short).
 

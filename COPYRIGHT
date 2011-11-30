@@ -1,9 +1,8 @@
-/*
 Copyright 2008-2011
 CEAL Project -- Umut A. Acar and Matthew A. Hammer
 
-File: basemm.h
-Author(s): Matthew A. Hammer <hammer@mpi-sws.org>
+File: FILENAME
+Author(s): AUTHORS
 
 This file is part of the CEAL language implementation (CEAL for short).
 
@@ -19,23 +18,3 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with CEAL.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/* Matthew A Hammer <hammer@tti-c.org> */
-/* Base Memory Management -- explicit, non-moving memory management,
-   optimized for lots of small objects. */
-
-#ifndef __CEAL_BASEMM_H__
-#define __CEAL_BASEMM_H__
-
-#include <inttypes.h>
-
-extern uintptr_t basemm_bytes_malloc;
-extern uintptr_t basemm_bytes_free;
-extern uintptr_t basemm_bytes_maxlive;
-
-void  basemm_init();
-void* basemm_malloc(uintptr_t size);
-void  basemm_free(uintptr_t size, void* ptr);
-
-#endif

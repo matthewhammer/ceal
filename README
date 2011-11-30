@@ -8,12 +8,12 @@ call and be called by conventional C code.
 
 == People ==
 
-The CEAL project is supervised by Umut A Acar (http://umut.mpi-sws.org), and
-its primary developer is Matthew Hammer (http://mpi-sws.org/~hammer).
+The original CEAL project members consisted of:
 
-Where applicable, the CEAL source code should contain relevant author
-information on a file-by-file basis. As an overview, the following
-people have contributed code to the current system:
+  Umut A Acar (http://umut.mpi-sws.org) and
+  Matthew Hammer (http://mpi-sws.org/~hammer).
+
+Additional members of the project:
 
 Ezgi Cicek (Benchmark applications) 
 -- http://wp.mpi-sws.org/ecicek/ 
@@ -27,8 +27,20 @@ Reinhard Munz (Benchmark applications)
 Mike Rainey (Benchmark applications) 
 -- http://www.mpi-sws.org/~mrainey/
 
-CEAL is copyrighted by its authors. 
+The CEAL source code should contain relevant author information on a
+file-by-file basis.
+
+== Licensing and Copyright ==
+
+CEAL is copyrighted by the original CEAL project members.
 It is licensed under the GNU Public License, version 3.0.
+
+Requests for alternative licenses should be directed to:
+  ceal-devel@mpi-sws.org
+
+Relevant files:
+  COPYING   -- the GNU GPL version 3.
+  COPYRIGHT -- a copyright template.
 
 == Wiki Resources ==
 

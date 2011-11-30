@@ -116,9 +116,6 @@ void list_print(list_t in) {
 }
 
   
-map(in, &out1); list_print(out1);
-
-
 int main() {
 
   list_t in =
@@ -128,7 +125,7 @@ int main() {
   list_t out2;
   list_t out3;
 
-  
+  map(in, &out1); list_print(out1);  
   
   return 0;
 }

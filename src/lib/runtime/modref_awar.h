@@ -1,6 +1,9 @@
 /*
-Copyright 2008-2011 
-Matthew A. Hammer <hammer@mpi-sws.org>
+Copyright 2008-2011
+CEAL Project -- Umut A. Acar and Matthew A. Hammer
+
+File: modref_awar.h
+Author(s): Matthew A. Hammer <hammer@mpi-sws.org>
 
 This file is part of the CEAL language implementation (CEAL for short).
 

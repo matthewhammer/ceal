@@ -1,6 +1,9 @@
 /*
-Copyright 2008-2011 
-Matthew A. Hammer <hammer@mpi-sws.org>
+Copyright 2008-2011
+CEAL Project -- Umut A. Acar and Matthew A. Hammer
+
+File: hash_util64.h
+Author(s): Matthew A. Hammer <hammer@mpi-sws.org>
 
 This file is part of the CEAL language implementation (CEAL for short).
 
@@ -24,8 +27,8 @@ along with CEAL.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 /*
-  Note: These macros in this file were taken from Bob Jenkin's (public
-  domain) C code:
+  Note: The remaining macros in this file were taken from Bob Jenkin's
+  (public domain) C code:
 
   -- http://burtleburtle.net/bob/c/lookup8.c (64-bit)
 */
