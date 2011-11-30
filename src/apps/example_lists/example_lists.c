@@ -4,128 +4,101 @@
 #include <stdlib.h>
 #include "cealtesthook_dummies.c"
 
-#define print(FMT,...) printf("%s:%d: " FMT "\n", __FUNCTION__,__LINE__,##__VA_ARGS__)
+#define db(FMT,...) printf("-- %s:%d: " FMT "\n", __FUNCTION__,__LINE__,##__VA_ARGS__)
 
+/* Let's have lists that hold longs. */
 typedef long data_t;
-
-/* Definition of lists. */
-
-typedef struct cons_s cons_t;
-
-typedef cons_t* list_t;
-
-struct cons_s {
-  data_t hd;
-  list_t tl;
-} list_t;
-
-/* List construction. */
-
-#define nil ((list_t) NULL)
-
-list_t cons(data_t d) {
-  list_t cons = alloc( cons_t );
-  cons->hd = d;
-  return cons;
-}
-
 
 data_t some_function(data_t d) {
   return labs(d);
 }
 
-void map(list_t in, list_t* out) {
-  if(in == nil) {
-    *out = nil;
-  }
-  else {
-    data_t new_hd = some_function( in->hd );
-    list_t new_cons = cons( new_hd );
-    *out = new_cons;
-    map( in->tl, & new_cons->tl );
-  }  
-}
-
-
 long some_predicate(data_t d) {
   return labs(d) == d;
 }
 
-void filter(list_t in, list_t* out) {
-  if(in == nil) {
-    *out = nil;
-  }
-  else {
-    if( some_predicate( in->hd ) ) {
-      list_t new_cons = cons( in->hd );
-      *out = new_cons;
-      filter( in->tl, & new_cons->tl );
-    }
-    else {
-      filter( in->tl, out );
-    }
-  }
+/* TODO: Change this to include your memoized version of the file. */
+#include "example_lists_nomemo.c"
+
+list_t in;
+list_t map_out;
+list_t filter_out;
+list_t split_out1;
+list_t split_out2;
+list_t reverse_out;
+
+void the_core() {
+  list_map(in, &map_out);  
+  list_filter(in, &filter_out);  
+  list_split(in, &split_out1, &split_out2);  
+  list_reverse(in, nil, &reverse_out);
 }
 
-void split(list_t in, list_t* out1, list_t* out2) {
-  if(in == nil) {
-    *out = nil;
-  }
-  else {
-    list_t new_cons = cons( in->hd );
-    
-    if( some_predicate( in->hd ) ) {
-      *out1 = new_cons;
-      split( in->tl, & new_cons->tl, out2 );
-    }
-    else {
-      *out2 = new_cons;
-      split( in->tl, out1, & new_cons->tl );
-    }
-  }
+void print_input() {  
+  list_print("in", in);
 }
 
-void reverse(list_t in, list_t rev, list_t* out) {
-  if( in == nil ) {
-    *out = rev;
-  }
-  else {
-    list_t new_cons = cons( in->hd );
-    new_cons->tl = rev;
-    reverse(in->tl, new_cons, out);
-  }
+void print_output() {
+  list_print("map_out", map_out);
+  list_print("filter_out", filter_out);
+  list_print("split_out1", split_out1);
+  list_print("split_out1", split_out2);
+  list_print("reverse_out", reverse_out);
 }
 
+list_t* changed_ptr;
+list_t  changed_ptrs_old_value;
 
-list_t cons_(data_t hd, list_t tl) {
-  cons_t c = cons(hd);
-  c->tl = tl;
-  return c;
+void do_insertion() {
+  /* pick the pointer to change. */
+  changed_ptr = & in->tl->tl->tl->tl;
+
+  /* save where it's pointing to. */
+  changed_ptrs_old_value = *changed_ptr;
+
+  /* perform the insertion. */
+  *changed_ptr = list_cons_(42, changed_ptrs_old_value);
 }
 
-void list_print(list_t in) {
-  printf("[");
-  printf("%ld", in->hd);
-  if(in->tl) {
-    printf(",");
-    list_print(in->tl);
-  }
-  else {
-    printf("]");
-  }  
+void do_removal() {
+  /* grab the inserted cons. */
+  cons_t* cons = *changed_ptr;
+
+  /* revert the change. */
+  *changed_ptr = changed_ptrs_old_value;
+
+  /* reclaim space of the inserted cons cell. */
+  kill(cons);
 }
 
-  
 int main() {
+  
+  in = (list_cons_
+        (0, list_cons_
+         (+1, list_cons_
+          (-2, list_cons_
+           (-3, list_cons_
+            (+4, list_cons_
+             (-5, list_cons_
+              (+6, list_cons_
+               (-7, nil)
+               ) ) ) ) ) ) ) );
 
-  list_t in =
-    cons_(1, cons_(2, cons_(3, cons_(4, cons_(5, nil)))));
+  print_input();
+  core(the_core)();
+  print_output();
 
-  list_t out1;
-  list_t out2;
-  list_t out3;
+  printf("\ndoing an insertion\n");
+  do_insertion();
+  print_input();
+  propagate;
+  print_output();
 
-  map(in, &out1); list_print(out1);  
+  printf("\ndoing a removal\n");
+  do_removal();
+  print_input();
+  propagate;
+  print_output();
   
   return 0;
 }
