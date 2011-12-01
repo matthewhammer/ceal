@@ -45,14 +45,6 @@ void list_print(const char* name, list_t in) {
   printf("]\n");
 }
 
-data_t some_function(data_t d) {
-  return labs(d);
-}
-
-long some_predicate(data_t d) {
-  return labs(d) == d;
-}
-
 /* - - - - - - - - - - - - - - - - - - - - - - - - */
 /* TODO:
    1. Copy this file to example_lists_<username>.c

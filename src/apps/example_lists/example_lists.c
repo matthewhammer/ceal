@@ -1,5 +1,6 @@
 /* Matthew Hammer <hammer@mpi-sws.org> */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "cealtesthook_dummies.c"
@@ -46,32 +47,38 @@ void print_output() {
   list_print("reverse_out", reverse_out);
 }
 
-list_t* changed_ptr;
-list_t  changed_ptrs_old_value;
+list_t* finger;
+list_t  fingers_old_value;
+
+/* pick the pointer to change. */
+void setup_finger (long index) { assert( index >= 0 );
+  finger = & in;
+  while( index > 0 ) { 
+    finger = &((*finger)->tl); 
+    index--; 
+  }
+}
 
 void do_insertion() {
-  /* pick the pointer to change. */
-  changed_ptr = & in->tl->tl->tl->tl;
-
   /* save where it's pointing to. */
-  changed_ptrs_old_value = *changed_ptr;
+  fingers_old_value = *finger;
 
   /* perform the insertion. */
-  *changed_ptr = list_cons_(42, changed_ptrs_old_value);
+  *finger = list_cons_(42, fingers_old_value);
 }
 
 void do_removal() {
   /* grab the inserted cons. */
-  cons_t* cons = *changed_ptr;
+  cons_t* cons = *finger;
 
   /* revert the change. */
-  *changed_ptr = changed_ptrs_old_value;
+  *finger = fingers_old_value;
 
   /* reclaim space of the inserted cons cell. */
   kill(cons);
 }
 
-int main() {
+int main(int argc, char** argv) {
   
   in = (list_cons_
         (0, list_cons_
@@ -88,6 +95,8 @@ int main() {
   core(the_core)();
   print_output();
 
+  setup_finger(5);
+  
   printf("\ndoing an insertion\n");
   do_insertion();
   print_input();
