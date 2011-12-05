@@ -308,9 +308,10 @@ void ceal_init( ceal_init_flags_t init_flags ) {
     ceal_stack_init  ( s.stack    = &stack );
        
     /* Garbage lists are initially empty. */
-    s.garbage.collections  = 0;
-    s.garbage.trnodes      = NULL;
-    s.garbage.boxes        = NULL;
+    s.garbage.autogc_toggle = ~( init_flags & CEAL_INIT_NOAUTOGC );
+    s.garbage.collections   = 0;
+    s.garbage.trnodes       = NULL;
+    s.garbage.boxes         = NULL;
 
     /* By default, no metaboxes allocation handle. */
     s.metaboxes            = NULL;
@@ -1032,38 +1033,57 @@ ceal_propagate_interval(ceal_trnode_t* start,
   logg(PLUS_SEP_20 "Propagate " PLUS_SEP_20);
 }
 
+/* Toggle the autogc feature on and off. */
+void ceal_autogc_pause() {
+  ceal_state->garbage.autogc_toggle = 0;
+}
+
+void ceal_autogc_resume() {
+  ceal_state->garbage.autogc_toggle = 1;
+}
+
+int ceal_autogc_test() {
+  return ceal_state->garbage.autogc_toggle;
+}
+
 void ceal_free_garbage() {
 
   logg("- collections %ld", ceal_state->garbage.collections );
+
+  if( ceal_state->garbage.autogc_toggle ) {
   
-  { /* Free the trace nodes. */
-    ceal_trnode_garb_t* garb = ceal_state->garbage.trnodes;
-  
-    while( garb ) {
-      ceal_trnode_garb_t* next = garb->next;
-      ceal_trnode_free((ceal_trnode_t*) garb);
-      garb = next;
-    }
-  }
-
-  { /* Free the boxes. */
-    ceal_box_t* garb = ceal_state->garbage.boxes;
-
-    while( garb ) {
-      ceal_box_t* next = garb->next;
-
-      logg("freeing garbage size %ld, box %p, pointer %p",
-           garb->size, garb, garb->data);
+    { /* Free the trace nodes. */
+      ceal_trnode_garb_t* garb = ceal_state->garbage.trnodes;
       
-      basemm_free( garb->size, garb );
-      garb = next;
+      while( garb ) {
+        ceal_trnode_garb_t* next = garb->next;
+        ceal_trnode_free((ceal_trnode_t*) garb);
+        garb = next;
+      }
     }
     
+    { /* Free the boxes. */
+      ceal_box_t* garb = ceal_state->garbage.boxes;
+      
+      while( garb ) {
+        ceal_box_t* next = garb->next;
+        
+        logg("freeing garbage size %ld, box %p, pointer %p",
+             garb->size, garb, garb->data);
+        
+        basemm_free( garb->size, garb );
+        garb = next;
+      }
+      
+    }
+    
+    ceal_state->garbage.collections ++;
+    ceal_state->garbage.trnodes = NULL;
+    ceal_state->garbage.boxes   = NULL;
   }
-  
-  ceal_state->garbage.collections ++;
-  ceal_state->garbage.trnodes = NULL;
-  ceal_state->garbage.boxes   = NULL;
+  else {
+    logg("autogc is currently toggled off.");
+  }
 
   logg("+");
 }
@@ -1099,9 +1119,9 @@ void ceal_propagate() {
   ceal_state->phase = CEAL_PROPAGATION_COMPLETE;
 
   ceal_dirtyset_assert_clear();
-  
-  ceal_free_garbage();
 
+  ceal_free_garbage();
+  
 #ifdef CEAL_ANALYTIC_STATS
   ceal_state->analytic_stats.propagations ++;
   ceal_save_analytic_stats();  

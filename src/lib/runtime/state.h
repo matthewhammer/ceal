@@ -100,6 +100,7 @@ typedef struct ceal_state_s {
 
   /* Two types of garbage: */
   struct {
+    uintptr_t           autogc_toggle;
     uintptr_t           collections;
     ceal_trnode_garb_t* trnodes;
     ceal_box_t*         boxes;

@@ -95,6 +95,7 @@ typedef enum ceal_init_flags_e {
   CEAL_INIT_SELFADJ  = 1,
   CEAL_INIT_VERIFIER = 2,
   CEAL_INIT_TVSIG    = 4,
+  CEAL_INIT_NOAUTOGC = 8,
 } ceal_init_flags_t ;
 
 /* Initialize global state. */
@@ -105,6 +106,11 @@ ceal_init_flags_t ceal_init_flags ();
 
 /* Propagate all pending changes */
 void ceal_propagate();
+
+/* Toggle the autogc feature on and off. */
+void ceal_autogc_pause();
+void ceal_autogc_resume();
+int  ceal_autogc_test();
 
 typedef struct ceal_desc_s       ceal_desc_t;
 typedef struct ceal_desc_stats_s ceal_desc_stats_t;
