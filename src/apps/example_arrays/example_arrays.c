@@ -41,11 +41,15 @@ void array_reduce(data_t* in, long len, data_t* out)  {
   *out = *in;
 }
 
-data_t* in;
-
 int main(int argc, char** argv) {
 
-  in = alloc_array(8);
+#if 1
+  data_t in[8];
+  data_t* in2 = in;
+#else
+  data_t* in = alloc_array(8);
+#endif
+  
   in[0] =  0;
   in[1] = +1;
   in[2] = -2;
@@ -57,7 +61,7 @@ int main(int argc, char** argv) {
 
   data_t out;
   
-  core(array_reduce)(in, 8, &out);
+  core(array_reduce)(in2, 8, &out);
   printf("out is %ld\n", out);
   
   in[3] = +3;
