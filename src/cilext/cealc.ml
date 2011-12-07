@@ -396,13 +396,13 @@ module Qual = struct
         | `Foreign_c 
         ]
 
-    type ckind = 
+    and ckind = 
         [ `Splay 
         | `Ring 
         | `Oneshot 
         ]
 
-    type feedback = [ `Feedback of bool ]
+    and feedback = [ `Feedback of bool ]
 
   end      
 
@@ -2490,148 +2490,95 @@ module Low = struct
     let float_type    = Cil.TFloat(Cil.FFloat, []) in
 
     let q_awar = Qual.Awar in
-    let q_zwzr = Qual.Zwzr in
     let q_owcr = Qual.Owcr in
-    let q_ring = Qual.Ring in
+    let q_zwzr = Qual.Zwzr in
+    let q_ring = Qual.Ring in    
+
+    let basetype_of_string = function
+      | "p"  -> Some void_ptr_type 
+      | "i"  -> Some int_type
+      | "ui" -> Some uint_type
+      | "l"  -> Some long_type
+      | "ul" -> Some ulong_type
+      | "d"  -> Some double_type
+      | "f"  -> Some float_type
+      | _    -> None
+    in
+    let match_ceal_1_t s = 
+      let re = Str.regexp "ceal_\\(.+\\)_t" in
+      Str.string_match re s 0
+    in
+    let match_ceal_3_t s = 
+      let re = Str.regexp "ceal_\\([^_]+\\)_\\([^_]+\\)_\\([^_]+\\)_t" in
+      Str.string_match re s 0
+    in
+    let match_ceal_1 s = 
+      let re = Str.regexp "ceal_\\(.+\\)" in
+      Str.string_match re s 0
+    in
+    let match_ceal_4 s = 
+      let re = Str.regexp "ceal_\\([^_]+\\)_\\([^_]+\\)_\\([^_]+\\)_\\([^_]+\\)" in
+      Str.string_match re s 0
+    in
 
     begin Cil.iterGlobals file begin function
-        (* Typedefs *)
+        
+      (* Typedefs *)
       | Cil.GType (typeinfo, _) -> begin
-
-          let add hspec =
+          
+          let add_type hspec =            
             if H.mem typs hspec then
               raise (Duplicate_runtime_type_spec hspec)
-            else
+            else (
+              (* Printf.fprintf stderr "added: %s\n%!" typeinfo.Cil.tname ; *)
               H.add typs hspec (Cil.TNamed (typeinfo, []))
+            )
           in
-          
-          match typeinfo.Cil.tname with              
-            (* (Non-parametric) types *)
-            | "ceal_desc_t"       -> add T_desc
-            | "ceal_redofn_t"     -> add T_redofn
-            | "ceal_undofn_t"     -> add T_undofn
-            | "ceal_desc_stats_t" -> add T_desc_stats
-            | "ceal_time_t"       -> add T_time
-            | "ceal_scope_t"      -> add T_scope
-            | "ceal_scopeh_t"     -> add T_scopeh
-            | "ceal_memoh_t"      -> add T_memoh
-            | "ceal_updateh_t"    -> add T_updateh
-            | "ceal_alloch_t"     -> add T_alloch
-            
-            (* Modrefs for AWAR Memory *)
-            | "ceal_modref_awar_p_t"  -> add (T_modref (q_awar, void_ptr_type))
-            | "ceal_modref_awar_i_t"  -> add (T_modref (q_awar, int_type))
-            | "ceal_modref_awar_ui_t" -> add (T_modref (q_awar, uint_type))
-            | "ceal_modref_awar_l_t"  -> add (T_modref (q_awar, long_type))
-            | "ceal_modref_awar_ul_t" -> add (T_modref (q_awar, ulong_type))
-            | "ceal_modref_awar_d_t"  -> add (T_modref (q_awar, double_type))
-            | "ceal_modref_awar_f_t"  -> add (T_modref (q_awar, float_type))
-                
-            (* Read Handles for AWAR Memory *)
-            | "ceal_readh_awar_p_t"  -> add (T_readh (q_awar, void_ptr_type))
-            | "ceal_readh_awar_i_t"  -> add (T_readh (q_awar, int_type))
-            | "ceal_readh_awar_ui_t" -> add (T_readh (q_awar, uint_type))
-            | "ceal_readh_awar_l_t"  -> add (T_readh (q_awar, long_type))
-            | "ceal_readh_awar_ul_t" -> add (T_readh (q_awar, ulong_type))
-            | "ceal_readh_awar_d_t"  -> add (T_readh (q_awar, double_type))
-            | "ceal_readh_awar_f_t"  -> add (T_readh (q_awar, float_type))
 
-            (* Write Handles for AWAR Memory *)
-            | "ceal_writeh_awar_p_t"  -> add (T_writeh (q_awar, void_ptr_type))
-            | "ceal_writeh_awar_i_t"  -> add (T_writeh (q_awar, int_type))
-            | "ceal_writeh_awar_ui_t" -> add (T_writeh (q_awar, uint_type))
-            | "ceal_writeh_awar_l_t"  -> add (T_writeh (q_awar, long_type))
-            | "ceal_writeh_awar_ul_t" -> add (T_writeh (q_awar, ulong_type))
-            | "ceal_writeh_awar_d_t"  -> add (T_writeh (q_awar, double_type))
-            | "ceal_writeh_awar_f_t"  -> add (T_writeh (q_awar, float_type))
+          let tname = typeinfo.Cil.tname in
 
-            (* Modrefs for ZWZR Memory *)
-            | "ceal_modref_zwzr_p_t"  -> add (T_modref (q_zwzr, void_ptr_type))
-            | "ceal_modref_zwzr_i_t"  -> add (T_modref (q_zwzr, int_type))
-            | "ceal_modref_zwzr_ui_t" -> add (T_modref (q_zwzr, uint_type))
-            | "ceal_modref_zwzr_l_t"  -> add (T_modref (q_zwzr, long_type))
-            | "ceal_modref_zwzr_ul_t" -> add (T_modref (q_zwzr, ulong_type))
-            | "ceal_modref_zwzr_d_t"  -> add (T_modref (q_zwzr, double_type))
-            | "ceal_modref_zwzr_f_t"  -> add (T_modref (q_zwzr, float_type))
-                
-            (* Read Handles for ZWZR Memory *)
-            | "ceal_readh_zwzr_p_t"  -> add (T_readh (q_zwzr, void_ptr_type))
-            | "ceal_readh_zwzr_i_t"  -> add (T_readh (q_zwzr, int_type))
-            | "ceal_readh_zwzr_ui_t" -> add (T_readh (q_zwzr, uint_type))
-            | "ceal_readh_zwzr_l_t"  -> add (T_readh (q_zwzr, long_type))
-            | "ceal_readh_zwzr_ul_t" -> add (T_readh (q_zwzr, ulong_type))
-            | "ceal_readh_zwzr_d_t"  -> add (T_readh (q_zwzr, double_type))
-            | "ceal_readh_zwzr_f_t"  -> add (T_readh (q_zwzr, float_type))
-
-            (* Write Handles for ZWZR Memory *)
-            | "ceal_writeh_zwzr_p_t"  -> add (T_writeh (q_zwzr, void_ptr_type))
-            | "ceal_writeh_zwzr_i_t"  -> add (T_writeh (q_zwzr, int_type))
-            | "ceal_writeh_zwzr_ui_t" -> add (T_writeh (q_zwzr, uint_type))
-            | "ceal_writeh_zwzr_l_t"  -> add (T_writeh (q_zwzr, long_type))
-            | "ceal_writeh_zwzr_ul_t" -> add (T_writeh (q_zwzr, ulong_type))
-            | "ceal_writeh_zwzr_d_t"  -> add (T_writeh (q_zwzr, double_type))
-            | "ceal_writeh_zwzr_f_t"  -> add (T_writeh (q_zwzr, float_type))
-
-            (* Modrefs for OWCR Memory *)
-            | "ceal_modref_owcr_p_t"  -> add (T_modref (q_owcr, void_ptr_type))
-            | "ceal_modref_owcr_i_t"  -> add (T_modref (q_owcr, int_type))
-            | "ceal_modref_owcr_ui_t" -> add (T_modref (q_owcr, uint_type))
-            | "ceal_modref_owcr_l_t"  -> add (T_modref (q_owcr, long_type))
-            | "ceal_modref_owcr_ul_t" -> add (T_modref (q_owcr, ulong_type))
-            | "ceal_modref_owcr_d_t"  -> add (T_modref (q_owcr, double_type))
-            | "ceal_modref_owcr_f_t"  -> add (T_modref (q_owcr, float_type))
-
-            (* Read Handles for OWCR Memory *)
-            | "ceal_readh_owcr_p_t"  -> add (T_readh (q_owcr, void_ptr_type))
-            | "ceal_readh_owcr_i_t"  -> add (T_readh (q_owcr, int_type))
-            | "ceal_readh_owcr_ui_t" -> add (T_readh (q_owcr, uint_type))
-            | "ceal_readh_owcr_l_t"  -> add (T_readh (q_owcr, long_type))
-            | "ceal_readh_owcr_ul_t" -> add (T_readh (q_owcr, ulong_type))
-            | "ceal_readh_owcr_d_t"  -> add (T_readh (q_owcr, double_type))
-            | "ceal_readh_owcr_f_t"  -> add (T_readh (q_owcr, float_type))
-
-            (* Write Handles for OWCR Memory *)
-            | "ceal_writeh_owcr_p_t"  -> add (T_writeh (q_owcr, void_ptr_type))
-            | "ceal_writeh_owcr_i_t"  -> add (T_writeh (q_owcr, int_type))
-            | "ceal_writeh_owcr_ui_t" -> add (T_writeh (q_owcr, uint_type))
-            | "ceal_writeh_owcr_l_t"  -> add (T_writeh (q_owcr, long_type))
-            | "ceal_writeh_owcr_ul_t" -> add (T_writeh (q_owcr, ulong_type))
-            | "ceal_writeh_owcr_d_t"  -> add (T_writeh (q_owcr, double_type))
-            | "ceal_writeh_owcr_f_t"  -> add (T_writeh (q_owcr, float_type))
-
-            (* Modrefs for RING Memory *)
-            | "ceal_modref_ring_p_t"  -> add (T_modref (q_ring, void_ptr_type))
-            | "ceal_modref_ring_i_t"  -> add (T_modref (q_ring, int_type))
-            | "ceal_modref_ring_ui_t" -> add (T_modref (q_ring, uint_type))
-            | "ceal_modref_ring_l_t"  -> add (T_modref (q_ring, long_type))
-            | "ceal_modref_ring_ul_t" -> add (T_modref (q_ring, ulong_type))
-            | "ceal_modref_ring_d_t"  -> add (T_modref (q_ring, double_type))
-            | "ceal_modref_ring_f_t"  -> add (T_modref (q_ring, float_type))
-
-            (* Read Handles for RING Memory *)
-            | "ceal_readh_ring_p_t"  -> add (T_readh (q_ring, void_ptr_type))
-            | "ceal_readh_ring_i_t"  -> add (T_readh (q_ring, int_type))
-            | "ceal_readh_ring_ui_t" -> add (T_readh (q_ring, uint_type))
-            | "ceal_readh_ring_l_t"  -> add (T_readh (q_ring, long_type))
-            | "ceal_readh_ring_ul_t" -> add (T_readh (q_ring, ulong_type))
-            | "ceal_readh_ring_d_t"  -> add (T_readh (q_ring, double_type))
-            | "ceal_readh_ring_f_t"  -> add (T_readh (q_ring, float_type))
-
-            (* Write Handles for RING Memory *)
-            | "ceal_writeh_ring_p_t"  -> add (T_writeh (q_ring, void_ptr_type))
-            | "ceal_writeh_ring_i_t"  -> add (T_writeh (q_ring, int_type))
-            | "ceal_writeh_ring_ui_t" -> add (T_writeh (q_ring, uint_type))
-            | "ceal_writeh_ring_l_t"  -> add (T_writeh (q_ring, long_type))
-            | "ceal_writeh_ring_ul_t" -> add (T_writeh (q_ring, ulong_type))
-            | "ceal_writeh_ring_d_t"  -> add (T_writeh (q_ring, double_type))
-            | "ceal_writeh_ring_f_t"  -> add (T_writeh (q_ring, float_type))
-                
-            | _ -> ()
+          if not (match_ceal_3_t tname) && 
+            match_ceal_1_t tname 
+          then
+            match Str.matched_group 1 tname with
+              | "desc"       -> add_type T_desc
+              | "redofn"     -> add_type T_redofn
+              | "undofn"     -> add_type T_undofn
+              | "desc_stats" -> add_type T_desc_stats
+              | "time"       -> add_type T_time
+              | "scope"      -> add_type T_scope
+              | "scopeh"     -> add_type T_scopeh
+              | "memoh"      -> add_type T_memoh
+              | "updateh"    -> add_type T_updateh
+              | "alloch"     -> add_type T_alloch
+              | _            -> ()
+          else
+            if match_ceal_3_t tname then
+              let struct_string = Str.matched_group 1 tname in
+              let qual_string   = Str.matched_group 2 tname in
+              let btype_string  = Str.matched_group 3 tname in
+              match
+                ( try Some (Qual.qual_of_string qual_string)
+                  with Not_found -> None ), 
+                ( basetype_of_string btype_string )
+              with
+                | None, _ -> ()
+                | _, None -> ()
+                | ( Some qual, Some basetype ) -> begin
+                    match struct_string with
+                      | "modref" -> add_type (T_modref (qual, basetype))
+                      | "readh"  -> add_type (T_readh  (qual, basetype))
+                      | "writeh" -> add_type (T_writeh (qual, basetype))
+                      | _        -> ()
+                  end
+            else
+              (* Printf.fprintf stderr "-- couldn't match: %s\n%!" tname *)
+              ()
         end
 
       (* Function prototypes *)
       | Cil.GVarDecl (var, _) -> begin
-        
+          
         let add op =
           if M.mem op (!vars) then
             raise (Duplicate_runtime_op op)
@@ -2640,310 +2587,103 @@ module Low = struct
             vars := M.add op var (!vars) 
         in
         
-        match var.Cil.vname with            
-          (* Initialize *)
-          | "ceal_init"         -> add Init
+        let vname = var.Cil.vname in
 
-          (* Core program *)
-          | "ceal_core_begin"   -> add Core_begin
-          | "ceal_core_end"     -> add Core_end
-              
-          (* Propagate *)
-          | "ceal_propagate"    -> add Propagate
+        (* CASE: ceal_tvsig_<suffix> *)
+        if 
+          try (suffix_after "ceal_tvsig_" vname) <> "" with Not_found -> false
+        then
+          let suffix = suffix_after "ceal_tvsig_" vname in
+          (* Printf.printf "tvsig(%s)\n" suffix ;  *)
+          add (Tv_signal(suffix))
+            
+        (* CASE: ceal_<suffix> *)
+        else if not (match_ceal_4 vname) &&
+          match_ceal_1 vname 
+        then
+          match Str.matched_group 1 vname with
+              (* Initialize *)
+            | "init"         -> add Init
 
-          (* Trace nodes *)
-          | "ceal_trnode_new"   -> add Trace_node
-              
-          (* Cuts *)
-          | "ceal_cut_begin"    -> add Cut_begin
-          | "ceal_cut_end"      -> add Cut_end
-
-          (* Memoization *)
-          | "ceal_memo_invoke"  -> add (Memo_invoke [])
-          | "ceal_memo_revoke"  -> add Memo_revoke
-
-          (* Update points *)
-          | "ceal_update_invoke"  -> add (Update_invoke [])
-          | "ceal_update_revoke"  -> add Update_revoke
-                        
-          (* Unboxed allocation *)
-          | "ceal_unboxed_invoke" -> add Unboxed_invoke
-          | "ceal_unboxed_revinv" -> add Unboxed_revinv
-          | "ceal_unboxed_revoke" -> add Unboxed_revoke
-
-          (* (boxed) Allocation *)
-          | "ceal_alloc_invoke"  -> add Alloc_invoke
-          | "ceal_alloc_revinv"  -> add Alloc_revinv
-          | "ceal_alloc_revoke"  -> add Alloc_revoke
-          | "ceal_alloc_kill"    -> add Alloc_kill
-
-          (* Scope allocation *)
-          | "ceal_scope_invoke"  -> add Scope_invoke
-          | "ceal_scope_revinv"  -> add Scope_revinv
-          | "ceal_scope_revoke"  -> add Scope_revoke
-              
-          (* Reads for AWAR Memory *)
-          (*                       *)
-          (* Read -- Pointers *)
-          | "ceal_read_invoke_awar_p" -> add (Read_invoke (q_awar, void_ptr_type))
-          | "ceal_read_revinv_awar_p" -> add (Read_revinv (q_awar, void_ptr_type))
-          | "ceal_read_revoke_awar_p" -> add (Read_revoke (q_awar, void_ptr_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_awar_i" -> add (Read_invoke (q_awar, int_type))
-          | "ceal_read_revinv_awar_i" -> add (Read_revinv (q_awar, int_type))
-          | "ceal_read_revoke_awar_i" -> add (Read_revoke (q_awar, int_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_awar_ui" -> add (Read_invoke (q_awar, uint_type))
-          | "ceal_read_revinv_awar_ui" -> add (Read_revinv (q_awar, uint_type))
-          | "ceal_read_revoke_awar_ui" -> add (Read_revoke (q_awar, uint_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_awar_l" -> add (Read_invoke (q_awar, long_type))
-          | "ceal_read_revinv_awar_l" -> add (Read_revinv (q_awar, long_type))
-          | "ceal_read_revoke_awar_l" -> add (Read_revoke (q_awar, long_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_awar_ul" -> add (Read_invoke (q_awar, ulong_type))
-          | "ceal_read_revinv_awar_ul" -> add (Read_revinv (q_awar, ulong_type))
-          | "ceal_read_revoke_awar_ul" -> add (Read_revoke (q_awar, ulong_type))
-          (* Read -- Floats *)
-          | "ceal_read_invoke_awar_f" -> add (Read_invoke (q_awar, float_type))
-          | "ceal_read_revinv_awar_f" -> add (Read_revinv (q_awar, float_type))
-          | "ceal_read_revoke_awar_f" -> add (Read_revoke (q_awar, float_type))
-          (* Read -- Doubles *)
-          | "ceal_read_invoke_awar_d" -> add (Read_invoke (q_awar, double_type))
-          | "ceal_read_revinv_awar_d" -> add (Read_revinv (q_awar, double_type))
-          | "ceal_read_revoke_awar_d" -> add (Read_revoke (q_awar, double_type))
-
-          (* Writes for AWAR Memory *)
-          (*                        *)
-          (* Write -- Pointers *)
-          | "ceal_write_invoke_awar_p" -> add (Write_invoke (q_awar, void_ptr_type))
-          | "ceal_write_revinv_awar_p" -> add (Write_revinv (q_awar, void_ptr_type))
-          | "ceal_write_revoke_awar_p" -> add (Write_revoke (q_awar, void_ptr_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_awar_i" -> add (Write_invoke (q_awar, int_type))
-          | "ceal_write_revinv_awar_i" -> add (Write_revinv (q_awar, int_type))
-          | "ceal_write_revoke_awar_i" -> add (Write_revoke (q_awar, int_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_awar_ui" -> add (Write_invoke (q_awar, uint_type))
-          | "ceal_write_revinv_awar_ui" -> add (Write_revinv (q_awar, uint_type))
-          | "ceal_write_revoke_awar_ui" -> add (Write_revoke (q_awar, uint_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_awar_l" -> add (Write_invoke (q_awar, long_type))
-          | "ceal_write_revinv_awar_l" -> add (Write_revinv (q_awar, long_type))
-          | "ceal_write_revoke_awar_l" -> add (Write_revoke (q_awar, long_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_awar_ul" -> add (Write_invoke (q_awar, ulong_type))
-          | "ceal_write_revinv_awar_ul" -> add (Write_revinv (q_awar, ulong_type))
-          | "ceal_write_revoke_awar_ul" -> add (Write_revoke (q_awar, ulong_type))
-          (* Write -- Floats *)
-          | "ceal_write_invoke_awar_f" -> add (Write_invoke (q_awar, float_type))
-          | "ceal_write_revinv_awar_f" -> add (Write_revinv (q_awar, float_type))
-          | "ceal_write_revoke_awar_f" -> add (Write_revoke (q_awar, float_type))
-          (* Write -- Doubles *)
-          | "ceal_write_invoke_awar_d" -> add (Write_invoke (q_awar, double_type))
-          | "ceal_write_revinv_awar_d" -> add (Write_revinv (q_awar, double_type))
-          | "ceal_write_revoke_awar_d" -> add (Write_revoke (q_awar, double_type))
-
-          (* Reads for ZWZR Memory *)
-          (*                       *)
-          (* Read -- Pointers *)
-          | "ceal_read_invoke_zwzr_p" -> add (Read_invoke (q_zwzr, void_ptr_type))
-          | "ceal_read_revinv_zwzr_p" -> add (Read_revinv (q_zwzr, void_ptr_type))
-          | "ceal_read_revoke_zwzr_p" -> add (Read_revoke (q_zwzr, void_ptr_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_zwzr_i" -> add (Read_invoke (q_zwzr, int_type))
-          | "ceal_read_revinv_zwzr_i" -> add (Read_revinv (q_zwzr, int_type))
-          | "ceal_read_revoke_zwzr_i" -> add (Read_revoke (q_zwzr, int_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_zwzr_ui" -> add (Read_invoke (q_zwzr, uint_type))
-          | "ceal_read_revinv_zwzr_ui" -> add (Read_revinv (q_zwzr, uint_type))
-          | "ceal_read_revoke_zwzr_ui" -> add (Read_revoke (q_zwzr, uint_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_zwzr_l" -> add (Read_invoke (q_zwzr, long_type))
-          | "ceal_read_revinv_zwzr_l" -> add (Read_revinv (q_zwzr, long_type))
-          | "ceal_read_revoke_zwzr_l" -> add (Read_revoke (q_zwzr, long_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_zwzr_ul" -> add (Read_invoke (q_zwzr, ulong_type))
-          | "ceal_read_revinv_zwzr_ul" -> add (Read_revinv (q_zwzr, ulong_type))
-          | "ceal_read_revoke_zwzr_ul" -> add (Read_revoke (q_zwzr, ulong_type))
-          (* Read -- Floats *)
-          | "ceal_read_invoke_zwzr_f" -> add (Read_invoke (q_zwzr, float_type))
-          | "ceal_read_revinv_zwzr_f" -> add (Read_revinv (q_zwzr, float_type))
-          | "ceal_read_revoke_zwzr_f" -> add (Read_revoke (q_zwzr, float_type))
-          (* Read -- Doubles *)
-          | "ceal_read_invoke_zwzr_d" -> add (Read_invoke (q_zwzr, double_type))
-          | "ceal_read_revinv_zwzr_d" -> add (Read_revinv (q_zwzr, double_type))
-          | "ceal_read_revoke_zwzr_d" -> add (Read_revoke (q_zwzr, double_type))
-
-          (* Writes for ZWZR Memory *)
-          (*                        *)
-          (* Write -- Pointers *)
-          | "ceal_write_invoke_zwzr_p" -> add (Write_invoke (q_zwzr, void_ptr_type))
-          | "ceal_write_revinv_zwzr_p" -> add (Write_revinv (q_zwzr, void_ptr_type))
-          | "ceal_write_revoke_zwzr_p" -> add (Write_revoke (q_zwzr, void_ptr_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_zwzr_i" -> add (Write_invoke (q_zwzr, int_type))
-          | "ceal_write_revinv_zwzr_i" -> add (Write_revinv (q_zwzr, int_type))
-          | "ceal_write_revoke_zwzr_i" -> add (Write_revoke (q_zwzr, int_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_zwzr_ui" -> add (Write_invoke (q_zwzr, uint_type))
-          | "ceal_write_revinv_zwzr_ui" -> add (Write_revinv (q_zwzr, uint_type))
-          | "ceal_write_revoke_zwzr_ui" -> add (Write_revoke (q_zwzr, uint_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_zwzr_l" -> add (Write_invoke (q_zwzr, long_type))
-          | "ceal_write_revinv_zwzr_l" -> add (Write_revinv (q_zwzr, long_type))
-          | "ceal_write_revoke_zwzr_l" -> add (Write_revoke (q_zwzr, long_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_zwzr_ul" -> add (Write_invoke (q_zwzr, ulong_type))
-          | "ceal_write_revinv_zwzr_ul" -> add (Write_revinv (q_zwzr, ulong_type))
-          | "ceal_write_revoke_zwzr_ul" -> add (Write_revoke (q_zwzr, ulong_type))
-          (* Write -- Floats *)
-          | "ceal_write_invoke_zwzr_f" -> add (Write_invoke (q_zwzr, float_type))
-          | "ceal_write_revinv_zwzr_f" -> add (Write_revinv (q_zwzr, float_type))
-          | "ceal_write_revoke_zwzr_f" -> add (Write_revoke (q_zwzr, float_type))
-          (* Write -- Doubles *)
-          | "ceal_write_invoke_zwzr_d" -> add (Write_invoke (q_zwzr, double_type))
-          | "ceal_write_revinv_zwzr_d" -> add (Write_revinv (q_zwzr, double_type))
-          | "ceal_write_revoke_zwzr_d" -> add (Write_revoke (q_zwzr, double_type))
-              
-          (* Reads for OWCR Memory *)
-          (*                       *)
-          (* Read -- Pointers *)
-          | "ceal_read_invoke_owcr_p" -> add (Read_invoke (q_owcr, void_ptr_type))
-          | "ceal_read_revinv_owcr_p" -> add (Read_revinv (q_owcr, void_ptr_type))
-          | "ceal_read_revoke_owcr_p" -> add (Read_revoke (q_owcr, void_ptr_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_owcr_i" -> add (Read_invoke (q_owcr, int_type))
-          | "ceal_read_revinv_owcr_i" -> add (Read_revinv (q_owcr, int_type))
-          | "ceal_read_revoke_owcr_i" -> add (Read_revoke (q_owcr, int_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_owcr_ui" -> add (Read_invoke (q_owcr, uint_type))
-          | "ceal_read_revinv_owcr_ui" -> add (Read_revinv (q_owcr, uint_type))
-          | "ceal_read_revoke_owcr_ui" -> add (Read_revoke (q_owcr, uint_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_owcr_l" -> add (Read_invoke (q_owcr, long_type))
-          | "ceal_read_revinv_owcr_l" -> add (Read_revinv (q_owcr, long_type))
-          | "ceal_read_revoke_owcr_l" -> add (Read_revoke (q_owcr, long_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_owcr_ul" -> add (Read_invoke (q_owcr, ulong_type))
-          | "ceal_read_revinv_owcr_ul" -> add (Read_revinv (q_owcr, ulong_type))
-          | "ceal_read_revoke_owcr_ul" -> add (Read_revoke (q_owcr, ulong_type))
-          (* Read -- Floats *)
-          | "ceal_read_invoke_owcr_f" -> add (Read_invoke (q_owcr, float_type))
-          | "ceal_read_revinv_owcr_f" -> add (Read_revinv (q_owcr, float_type))
-          | "ceal_read_revoke_owcr_f" -> add (Read_revoke (q_owcr, float_type))
-          (* Read -- Doubles *)
-          | "ceal_read_invoke_owcr_d" -> add (Read_invoke (q_owcr, double_type))
-          | "ceal_read_revinv_owcr_d" -> add (Read_revinv (q_owcr, double_type))
-          | "ceal_read_revoke_owcr_d" -> add (Read_revoke (q_owcr, double_type))
-
-          (* Writes for OWCR Memory *)
-          (*                        *)
-          (* Write -- Pointers *)
-          | "ceal_write_invoke_owcr_p" -> add (Write_invoke (q_owcr, void_ptr_type))
-          | "ceal_write_revinv_owcr_p" -> add (Write_revinv (q_owcr, void_ptr_type))
-          | "ceal_write_revoke_owcr_p" -> add (Write_revoke (q_owcr, void_ptr_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_owcr_i" -> add (Write_invoke (q_owcr, int_type))
-          | "ceal_write_revinv_owcr_i" -> add (Write_revinv (q_owcr, int_type))
-          | "ceal_write_revoke_owcr_i" -> add (Write_revoke (q_owcr, int_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_owcr_ui" -> add (Write_invoke (q_owcr, uint_type))
-          | "ceal_write_revinv_owcr_ui" -> add (Write_revinv (q_owcr, uint_type))
-          | "ceal_write_revoke_owcr_ui" -> add (Write_revoke (q_owcr, uint_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_owcr_l" -> add (Write_invoke (q_owcr, long_type))
-          | "ceal_write_revinv_owcr_l" -> add (Write_revinv (q_owcr, long_type))
-          | "ceal_write_revoke_owcr_l" -> add (Write_revoke (q_owcr, long_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_owcr_ul" -> add (Write_invoke (q_owcr, ulong_type))
-          | "ceal_write_revinv_owcr_ul" -> add (Write_revinv (q_owcr, ulong_type))
-          | "ceal_write_revoke_owcr_ul" -> add (Write_revoke (q_owcr, ulong_type))
-          (* Write -- Floats *)
-          | "ceal_write_invoke_owcr_f" -> add (Write_invoke (q_owcr, float_type))
-          | "ceal_write_revinv_owcr_f" -> add (Write_revinv (q_owcr, float_type))
-          | "ceal_write_revoke_owcr_f" -> add (Write_revoke (q_owcr, float_type))
-          (* Write -- Doubles *)
-          | "ceal_write_invoke_owcr_d" -> add (Write_invoke (q_owcr, double_type))
-          | "ceal_write_revinv_owcr_d" -> add (Write_revinv (q_owcr, double_type))
-          | "ceal_write_revoke_owcr_d" -> add (Write_revoke (q_owcr, double_type))
-              
-          (* Reads for RING Memory *)
-          (*                       *)
-          (* Read -- Pointers *)
-          | "ceal_read_invoke_ring_p" -> add (Read_invoke (q_ring, void_ptr_type))
-          | "ceal_read_revinv_ring_p" -> add (Read_revinv (q_ring, void_ptr_type))
-          | "ceal_read_revoke_ring_p" -> add (Read_revoke (q_ring, void_ptr_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_ring_i" -> add (Read_invoke (q_ring, int_type))
-          | "ceal_read_revinv_ring_i" -> add (Read_revinv (q_ring, int_type))
-          | "ceal_read_revoke_ring_i" -> add (Read_revoke (q_ring, int_type))
-          (* Read -- Integers *)
-          | "ceal_read_invoke_ring_ui" -> add (Read_invoke (q_ring, uint_type))
-          | "ceal_read_revinv_ring_ui" -> add (Read_revinv (q_ring, uint_type))
-          | "ceal_read_revoke_ring_ui" -> add (Read_revoke (q_ring, uint_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_ring_l" -> add (Read_invoke (q_ring, long_type))
-          | "ceal_read_revinv_ring_l" -> add (Read_revinv (q_ring, long_type))
-          | "ceal_read_revoke_ring_l" -> add (Read_revoke (q_ring, long_type))
-          (* Read -- Longs *)
-          | "ceal_read_invoke_ring_ul" -> add (Read_invoke (q_ring, ulong_type))
-          | "ceal_read_revinv_ring_ul" -> add (Read_revinv (q_ring, ulong_type))
-          | "ceal_read_revoke_ring_ul" -> add (Read_revoke (q_ring, ulong_type))
-          (* Read -- Floats *)
-          | "ceal_read_invoke_ring_f" -> add (Read_invoke (q_ring, float_type))
-          | "ceal_read_revinv_ring_f" -> add (Read_revinv (q_ring, float_type))
-          | "ceal_read_revoke_ring_f" -> add (Read_revoke (q_ring, float_type))
-          (* Read -- Doubles *)
-          | "ceal_read_invoke_ring_d" -> add (Read_invoke (q_ring, double_type))
-          | "ceal_read_revinv_ring_d" -> add (Read_revinv (q_ring, double_type))
-          | "ceal_read_revoke_ring_d" -> add (Read_revoke (q_ring, double_type))
-
-          (* Writes for RING Memory *)
-          (*                        *)
-          (* Write -- Pointers *)
-          | "ceal_write_invoke_ring_p" -> add (Write_invoke (q_ring, void_ptr_type))
-          | "ceal_write_revinv_ring_p" -> add (Write_revinv (q_ring, void_ptr_type))
-          | "ceal_write_revoke_ring_p" -> add (Write_revoke (q_ring, void_ptr_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_ring_i" -> add (Write_invoke (q_ring, int_type))
-          | "ceal_write_revinv_ring_i" -> add (Write_revinv (q_ring, int_type))
-          | "ceal_write_revoke_ring_i" -> add (Write_revoke (q_ring, int_type))
-          (* Write -- Integers *)
-          | "ceal_write_invoke_ring_ui" -> add (Write_invoke (q_ring, uint_type))
-          | "ceal_write_revinv_ring_ui" -> add (Write_revinv (q_ring, uint_type))
-          | "ceal_write_revoke_ring_ui" -> add (Write_revoke (q_ring, uint_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_ring_l" -> add (Write_invoke (q_ring, long_type))
-          | "ceal_write_revinv_ring_l" -> add (Write_revinv (q_ring, long_type))
-          | "ceal_write_revoke_ring_l" -> add (Write_revoke (q_ring, long_type))
-          (* Write -- Longs *)
-          | "ceal_write_invoke_ring_ul" -> add (Write_invoke (q_ring, ulong_type))
-          | "ceal_write_revinv_ring_ul" -> add (Write_revinv (q_ring, ulong_type))
-          | "ceal_write_revoke_ring_ul" -> add (Write_revoke (q_ring, ulong_type))
-          (* Write -- Floats *)
-          | "ceal_write_invoke_ring_f" -> add (Write_invoke (q_ring, float_type))
-          | "ceal_write_revinv_ring_f" -> add (Write_revinv (q_ring, float_type))
-          | "ceal_write_revoke_ring_f" -> add (Write_revoke (q_ring, float_type))
-          (* Write -- Doubles *)
-          | "ceal_write_invoke_ring_d" -> add (Write_invoke (q_ring, double_type))
-          | "ceal_write_revinv_ring_d" -> add (Write_revinv (q_ring, double_type))
-          | "ceal_write_revoke_ring_d" -> add (Write_revoke (q_ring, double_type))
-              
-          (* TV Signals *)
-          | name when ( 
-              try (suffix_after "ceal_tvsig_" name) <> "" with Not_found -> false 
-            ) -> 
-              let suffix = suffix_after "ceal_tvsig_" name in
-              (* Printf.printf "tvsig(%s)\n" suffix ;  *)
-              add (Tv_signal(suffix))
-
-          | _ -> ()       
-
-        end (* Cil.GVarDecl case *)      
+            (* Core program *)
+            | "core_begin"   -> add Core_begin
+            | "core_end"     -> add Core_end
+                
+            (* Propagate *)
+            | "propagate"    -> add Propagate
+                
+            (* Trace nodes *)
+            | "trnode_new"   -> add Trace_node
+                
+            (* Cuts *)
+            | "cut_begin"    -> add Cut_begin
+            | "cut_end"      -> add Cut_end
+                
+            (* Memoization *)
+            | "memo_invoke"  -> add (Memo_invoke [])
+            | "memo_revoke"  -> add Memo_revoke
+                
+            (* Update points *)
+            | "update_invoke"  -> add (Update_invoke [])
+            | "update_revoke"  -> add Update_revoke
+                
+            (* Unboxed allocation *)
+            | "unboxed_invoke" -> add Unboxed_invoke
+            | "unboxed_revinv" -> add Unboxed_revinv
+            | "unboxed_revoke" -> add Unboxed_revoke
+                
+            (* (boxed) Allocation *)
+            | "alloc_invoke"  -> add Alloc_invoke
+            | "alloc_revinv"  -> add Alloc_revinv
+            | "alloc_revoke"  -> add Alloc_revoke
+            | "alloc_kill"    -> add Alloc_kill
+                
+            (* Scope allocation *)
+            | "scope_invoke"  -> add Scope_invoke
+            | "scope_revinv"  -> add Scope_revinv
+            | "scope_revoke"  -> add Scope_revoke
+            
+            | _ -> ()
+        else
+          (* CASE: ceal_<op>_<opop>_<qual>_<btype> *)
+          if match_ceal_4 vname then
+            let op = 
+              match Str.matched_group 1 vname with
+                | "read"  -> `Read
+                | "write" -> `Write
+                | _       -> `Error
+            in
+            let opop = 
+              match Str.matched_group 2 vname with
+                | "invoke" -> `Invoke
+                | "revoke" -> `Revoke
+                | "revinv" -> `Revinv
+                | _        -> `Error
+            in
+            let qual = 
+              try Some (Qual.qual_of_string (Str.matched_group 3 vname))
+              with Not_found -> None
+            in
+            let btype = 
+              basetype_of_string (Str.matched_group 4 vname)
+            in
+            match qual, btype with
+              | None, _ -> ()
+              | _, None -> ()
+              | Some q, Some t -> begin let q_t = (q,t) in
+                  match op, opop with 
+                    | `Read,  `Invoke -> add (Read_invoke  q_t)
+                    | `Read,  `Revinv -> add (Read_revinv  q_t)
+                    | `Read,  `Revoke -> add (Read_revoke  q_t)
+                    | `Write, `Invoke -> add (Write_invoke q_t)
+                    | `Write, `Revinv -> add (Write_revinv q_t)
+                    | `Write, `Revoke -> add (Write_revoke q_t)
+                    | `Error, _       -> ()
+                    | _     , `Error  -> ()
+                end          
+        end (* Cil.GVarDecl case *)
           
       | _ -> ()
-        
     end 
     end (* Cil.iterGlobals *)
   end (* end init function *)    
