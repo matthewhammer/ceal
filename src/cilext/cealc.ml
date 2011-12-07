@@ -389,6 +389,23 @@ end
 
 module Qual = struct  
 
+  module Scratch = struct
+    type t = 
+        [ `Changeable of ckind * feedback
+        | `Stable
+        | `Foreign_c 
+        ]
+
+    type ckind = 
+        [ `Splay 
+        | `Ring 
+        | `Oneshot 
+        ]
+
+    type feedback = [ `Feedback of bool ]
+
+  end      
+
   type t =      
       (* Foreign_c: Cannot change the representation: foriegn C code
          will use it.  Storage with this qualifier is accessed by Peek
