@@ -41,7 +41,7 @@ for my $command (@commands_to_run) {
     print "Running: $command ...";
     
     if( system($piped_command) ) {
-        push @commands_that_failed, $command;
+        push @commands_that_failed, [$command, $?];
         push @output_from_failures, $out;
 
         my $has_bad_stack = 0;
@@ -83,7 +83,10 @@ print ".\n\n";
 
 ## Say what failed
 printf "Failed (%d/%d):\n", (scalar @commands_that_failed), (scalar @commands_to_run);
-print (join("\n", @commands_that_failed));
+for my $command_status  (@commands_that_failed) {
+    my ($command, $status) = @$command_status;
+    printf "$status $command\n";
+}
 print ".\n\n";
 
 
@@ -94,7 +97,8 @@ if( scalar (@output_from_failures) ) {
     system("date > $fail_out; echo >> $fail_out");    
     system("echo The following commands failed their regression tests: >> $fail_out");
     
-    for my $command ( @commands_that_failed ) {
+    for my $command_status ( @commands_that_failed ) {
+        my ($command,$status) = @$command_status;
         system("echo '  ' $command >> $fail_out");
     }
     
@@ -102,7 +106,8 @@ if( scalar (@output_from_failures) ) {
 
     my @commands = @commands_that_failed;
     for my $output (@output_from_failures) {
-        my $command = shift @commands;
+        my $command_status = shift @commands;
+        my ($command,$status) = @$command_status;
         my $sep = "- - - - - - - - - - " ;
         system("echo $sep $sep $sep $sep >> $fail_out");
         system("echo $command >> $fail_out");

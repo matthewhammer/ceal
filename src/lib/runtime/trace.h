@@ -37,7 +37,7 @@ along with CEAL.  If not, see <http://www.gnu.org/licenses/>.
    
    Each descriptor corresponds to a chunk of CEAL core code that is
    traced as one inseparable unit.  Each time the chunk is traced, the
-   RT generates a new trace node _instance_ that carries a pointer to
+   RT generates a new trace node instance that carries a pointer to
    the corresponding descriptor.
 
    Descriptors carry information that is (1) known statically and (2)
@@ -229,7 +229,32 @@ ceal_scope_t   ceal_trnode_scope(ceal_trnode_t* trnode);
 int            ceal_trnode_compare(ceal_trnode_t* trnode1, ceal_trnode_t* trnode2);
 void           ceal_trnode_enqueue(ceal_trnode_t* trnode);
 void           ceal_trnode_enqueue_if_in_future(ceal_trnode_t* trnode);
-void           ceal_dirtyset_add(void* thing, void(*cb)(void* thing));
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Dirtiness and feedback.
+
+   A thing (like a modref, or TDT) is "dirty" if it's not consistent
+   by a change at the (meta/core)-level.
+
+   -- The notion of meta-level dirtiness is used to select between
+      viewing memory in its final state, or its initial state.  A
+      meta-level write makes the written address dirty.  (we select
+      the final state if the address is not dirty; or the initial
+      (dirty) state if the address is dirty).
+   
+   -- The notion of core-level dirtiness is used to perform feedback.
+      A dirty address is one that requires its final state to be
+      reflected back as its initial state (i.e., it requires a
+      post-propagation feedback step).
+
+   -- The "auto" version uses ceal_state->phase to pick the right one;
+      it does nothing when ceal_state->phase == NO_CORE (if there is
+      NO_CORE, then there is no trace, and hence, nothing that can be
+      inconsistent/dirty.)
+*/
+void ceal_dirtyset_meta_add(void* thing, void(*cb)(void* thing));
+void ceal_dirtyset_core_add(void* thing, void(*cb)(void* thing)); 
+void ceal_dirtyset_auto_add(void* thing, void(*cb)(void* thing));
 
 #define FMT_TRNODE        "trnode %p"
 #define VAS_TRNODE(trnode) trnode

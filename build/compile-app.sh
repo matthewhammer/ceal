@@ -142,9 +142,9 @@ function compile_app_binaries {
               "$FLAGS_FOREIGN_RING $FLAGS_TV" \
               "ipvV";
 
-#          compile_binary $APP $APP_SRC_PATH "../bin/apps/$APP/foreign-splay" \
-#              "$FLAGS_FOREIGN_SPLAY" \
-#              "ipvV";
+          compile_binary $APP $APP_SRC_PATH "../bin/apps/$APP/foreign-splay" \
+              "$FLAGS_FOREIGN_SPLAY" \
+              "ipvV";
 
          compile_binary $APP $APP_SRC_PATH "../bin/apps/$APP/verf" \
              "--ceal-verifier" "i"

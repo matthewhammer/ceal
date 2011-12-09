@@ -30,6 +30,8 @@ along with CEAL.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "trace.h"
 
+#define Feedback_flag 0
+
 #define Tv   void*
 #define Fv   "%p"
 #define S(x) ceal_## x ##_awar_p_s

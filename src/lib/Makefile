@@ -114,7 +114,9 @@ default: $(LIBCEALH) $(LIBCEAL) $(LIBCEALOPT)
 # were mostly due to my wierd use of #includes to do functor-like
 # things.  This file depends on everything that could concievably
 # affect the runtime.  In turn, the runtime libraries we produce each
-# depend on it.  Since we are doing a "whole-program" style compilation, and since the runtime still compiles fast enough (under a minute)
+# depend on it.  Since we are doing a "whole-program" style
+# compilation, and since the runtime still compiles fast enough (under
+# a minute)
 $(ALLSOURCEDUM): Makefile $(ALLSOURCEDEP) | $(BINDIR)
 	@echo "Creating $@."
 	@echo "/* Conservatively, everything depends on: */" > $@

@@ -264,7 +264,8 @@ void ceal_init( ceal_init_flags_t init_flags ) {
     static ceal_state_t  s;
     static ceal_pqueue_t pqueue;
     static ceal_stack_t  stack;
-    static ceal_stack_t  dirtyset;
+    static ceal_stack_t  dirtyset_meta;
+    static ceal_stack_t  dirtyset_core;
     
     /* Desc for the first trace node  */
     static ceal_desc_t desc =
@@ -303,9 +304,10 @@ void ceal_init( ceal_init_flags_t init_flags ) {
     s.scope          = ceal_scope_invoke( s.first, & s.root_scopeh );
     
     /* Setup the queue, stack and dirtyset. */
-    ceal_pqueue_init ( s.pqueue   = &pqueue );
-    ceal_stack_init  ( s.dirtyset = &dirtyset );
-    ceal_stack_init  ( s.stack    = &stack );
+    ceal_pqueue_init ( s.pqueue        = &pqueue );
+    ceal_stack_init  ( s.stack         = &stack );
+    ceal_stack_init  ( s.dirtyset_meta = &dirtyset_meta );
+    ceal_stack_init  ( s.dirtyset_core = &dirtyset_core );
        
     /* Garbage lists are initially empty. */
     s.garbage.autogc_toggle = ~( init_flags & CEAL_INIT_NOAUTOGC );
@@ -347,14 +349,14 @@ ceal_init_flags_t ceal_init_flags() {
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Dirty sets. -- See state.h */
 
-void ceal_dirtyset_add(void* thing, void(*cb)(void* thing)) {
-  ceal_stack_push(ceal_state->dirtyset, thing);
-  ceal_stack_push(ceal_state->dirtyset, cb);
+typedef ceal_stack_t ceal_dirtyset_t;
+
+void ceal_dirtyset_add(ceal_dirtyset_t* dirtyset, void* thing, void(*cb)(void* thing)) {
+  ceal_stack_push(dirtyset, thing);
+  ceal_stack_push(dirtyset, cb);
 }
 
-void ceal_dirtyset_clear() {
-  ceal_stack_t* dirtyset = ceal_state->dirtyset;
-  
+void ceal_dirtyset_discharge(ceal_dirtyset_t* dirtyset) {
   while( ! ceal_stack_isempty( dirtyset ) ) {
     void (*cb)(void* _) = ceal_stack_pop( dirtyset );
     void* thing         = ceal_stack_pop( dirtyset );
@@ -362,10 +364,34 @@ void ceal_dirtyset_clear() {
   }
 }
 
-void ceal_dirtyset_assert_clear() {
+void ceal_dirtyset_assert_clear(ceal_dirtyset_t* dirtyset) {
 #if CEAL_DEBUG
-  assert( ceal_stack_isempty( ceal_state->dirtyset ) );
+  assert( ceal_stack_isempty( dirtyset ) );
 #endif
+}
+
+void ceal_dirtyset_meta_add(void* thing, void(*cb)(void* thing)) {
+  ceal_dirtyset_add(ceal_state->dirtyset_meta, thing, cb);
+}
+
+void ceal_dirtyset_core_add(void* thing, void(*cb)(void* thing)) {
+  ceal_dirtyset_add(ceal_state->dirtyset_core, thing, cb);
+}
+
+void ceal_dirtyset_auto_add(void* thing, void(*cb)(void* thing)) {
+  if(ceal_state->phase == CEAL_NO_CORE ) {
+    /* No op. */
+  }
+  if(ceal_state->phase == CEAL_CORE_COMPLETE ||
+     ceal_state->phase == CEAL_PROPAGATION_COMPLETE ) {
+    /* ==> Meta level is active. */
+    ceal_dirtyset_meta_add(thing, cb);
+  }
+  else if(ceal_state->phase == CEAL_CORE_FROM_SCRATCH ||
+          ceal_state->phase == CEAL_PROPAGATION_RUNNING ){
+    /* ==> Core is active. */
+    ceal_dirtyset_core_add(thing, cb);
+  }
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -514,6 +540,9 @@ void ceal_core_end() {
   ceal_state->analytic_stats__from_scratch =
     ceal_state->analytic_stats ;  
 #endif
+
+  /* Reflect the changes back to the meta-level. */
+  ceal_dirtyset_discharge(ceal_state->dirtyset_core);
   
   logg(PLUS_SEP_20 "Core " PLUS_SEP_20);
 }
@@ -1098,27 +1127,36 @@ void ceal_propagate() {
           ceal_state->phase == CEAL_PROPAGATION_COMPLETE );
 #endif
 
-  ceal_dirtyset_clear();
-  
-  ceal_state->phase = CEAL_PROPAGATION_RUNNING;
+  /* Manage the dirtyset. */
+  ceal_dirtyset_discharge(ceal_state->dirtyset_meta);
+  ceal_dirtyset_assert_clear(ceal_state->dirtyset_core);
 
+  /* Manage the TV signals. */
   ceal_tvsig_meta_begin(-1, __FILE__, __FUNCTION__, __LINE__, -1);
   ceal_tvsig_m_prop_begin();
   ceal_tvsig_meta_end();
-  
+
+  /* Now we are propagating. */
+  ceal_state->phase = CEAL_PROPAGATION_RUNNING;
+
+  /* Propagation itself. */
   ceal_propagate_interval(ceal_state->first,
                           ceal_state->last);
 #ifdef CEAL_DEBUG
   assert( ceal_state->phase == CEAL_PROPAGATION_RUNNING );
 #endif
-  
+
+  /* Now we are finished propagating. */
+  ceal_state->phase = CEAL_PROPAGATION_COMPLETE;
+
+  /* Manage the TV signals. */
   ceal_tvsig_meta_begin(-1, __FILE__, __FUNCTION__, __LINE__, -1);
   ceal_tvsig_m_prop_end();
   ceal_tvsig_meta_end();
-  
-  ceal_state->phase = CEAL_PROPAGATION_COMPLETE;
 
-  ceal_dirtyset_assert_clear();
+  /* Manage the dirtyset. */
+  ceal_dirtyset_discharge(ceal_state->dirtyset_core);  
+  ceal_dirtyset_assert_clear(ceal_state->dirtyset_meta);
 
   ceal_free_garbage();
   

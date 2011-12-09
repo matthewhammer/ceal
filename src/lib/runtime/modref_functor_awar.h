@@ -50,6 +50,7 @@ typedef struct S(event) {
   ceal_trnode_t* trnode;
 
   enum {
+    E(EVENT_ZERO)=0,
     E(EVENT_READ),
     E(EVENT_WRITE),
   } tag; /* TODO: pack this, perhaps in the modref field? */

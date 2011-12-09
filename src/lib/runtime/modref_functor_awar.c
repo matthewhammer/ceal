@@ -161,15 +161,7 @@ static int F(event_comp)(T(event)* t1, T(event)* t2) {
 #endif
   
   if(time1 == time2) {
-#ifdef CEAL_DEBUG
-    /* Invariant: if times are equal and one event is null, then they
-       are both null.  This invariant justifies the subtraction step
-       we do next.*/
-    if(t1 == NULL || t2 == NULL) {
-      assert(t1 == NULL && t2 == NULL);
-    }
-#endif
-    /* BUG-FIX: returning simply (t1 - t2) doesn't do the right thing.
+    /* Note: returning simply (t1 - t2) doesn't do the right thing.
        Even if you are careful to cast these pointers to either void*
        or char*.  */
     
@@ -441,12 +433,10 @@ static T(event)* F(event_succ_of)(T(event)* t, T(event)* pred) {
 }
 
 
-
 /* Enqueue all the reads that occur at t and afterwards, up until the
    first write occuring after t. */
 static T(event)* F(event_enqueue_reads)(ceal_trnode_t* trnode, T(event)* t)
 {
-
   while (t && (F(tag_of_event)(t) == E(EVENT_READ))) {    
     /* Does the successor occur (strictly) after this write? */
     if(trnode != F(trnode_of_event)(t)) {
@@ -464,6 +454,62 @@ static T(event)* F(event_enqueue_reads)(ceal_trnode_t* trnode, T(event)* t)
   return t;
 }
 
+static T(event)* F(first_write_of_events)(T(event)* t) {
+
+  /* Use this dummy event to search for first event */
+  T(event) first = {
+#ifdef CEAL_DEBUG_MODTYP
+    CEAL_MODTYP_AWAR,
+#endif
+    NULL, NULL, ceal_state->first
+  };
+  
+  /* Get the first event */
+  t = F(event_pred_of)(t, & first);
+
+  return t;
+}
+
+static T(event)* F(last_event_of_events)(T(event)* t) {
+
+  /* Use this dummy event to search for first event */
+  T(event) last = {
+#ifdef CEAL_DEBUG_MODTYP
+    CEAL_MODTYP_AWAR,
+#endif
+    NULL, NULL, ceal_state->last
+  };
+  
+  /* Get the first event */
+  t = F(event_succ_of)(t, & last);
+
+  return t;
+}
+
+/* Returns the first write, and sets a flag as to whether this first
+   write occurs at the meta-level or not.  If you care about only
+   getting a meta-level write, you must check this flag.  */
+static T(event)* F(meta_write_of_events)(T(event)* t, uintptr_t* flag_exists) {
+  
+  t = F(first_write_of_events)( t );
+  
+  /* If it exists, it had better occur first */
+  if( flag_exists
+      && t != NULL
+      && F(trnode_of_event)(t) == ceal_state->first ) {
+    *flag_exists = 1;
+  }
+  
+  return t;
+}
+
+static T(event)* F(event_enqueue_initial_readers)(ceal_trnode_t* trnode, T(event)* t) {
+  return
+    F(event_enqueue_reads)
+    ( NULL,
+      F(event_next)
+      ( F(meta_write_of_events)( t, NULL ) ) );
+}
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Getting/Setting/Clearing dirty status */
@@ -482,36 +528,53 @@ static void F(modref_set_dirty)(T(modref)* m) {
   F(modref_set_lsbs)(m, E(DIRTY));
 }
 
-static void F(modref_clear_dirty_)(T(modref)* m) {
+static void F(modref_discharge_dirty_meta)(void* thing) {
+  T(modref)* m = (T(modref)*) thing;
+  logg("modref %p", thing);
 #if CEAL_DEBUG
   assert( F(modref_is_dirty)(m) );
 #endif
+  F(modref_set_events)(m, F(event_enqueue_initial_readers)(NULL, F(events_of_modref)(m)));
   F(modref_set_lsbs)(m, E(__CLEAR));
 }
 
-static void F(modref_clear_dirty)(void* m) {
-  F(modref_clear_dirty_)( (T(modref)*) m );
+static void F(modref_add_to_dirtyset_meta)(T(modref)* modref)
+{
+  logg("modref %p", modref);
+  /* Is the first write since the last change-propagation? */
+  if( ! F(modref_is_dirty)(modref) ) {
+    /* Set dirty; add it to the dirtyset. */
+    F(modref_set_dirty)(modref);
+    ceal_dirtyset_meta_add(modref, F(modref_discharge_dirty_meta));
+  }
 }
 
-static T(event)* F(meta_write_of_events)(T(event)* t) {
-  
-  /* Use this dummy event to search for first event */
-  T(event) first = {
-#ifdef CEAL_DEBUG_MODTYP
-    CEAL_MODTYP_AWAR,
+static void F(modref_discharge_dirty_core)(void* thing) {
+  T(modref)* m = (T(modref)*) thing;
+  logg("modref %p", thing);
+#if CEAL_DEBUG
+  assert( F(modref_is_dirty)(m) );
 #endif
-    NULL, NULL, ceal_state->first
-  };
-  
-  /* Get the first event */
-  t = F(event_pred_of)(t, & first);
-  
-#ifdef CEAL_DEBUG
-  /* If it exists, it had better occur first */
-  assert( t == NULL || F(trnode_of_event)(t) == ceal_state->first );
-#endif
+  T(event)* last_event = NULL;
+  F(modref_set_events)(m, last_event = F(last_event_of_events)( F(events_of_modref)(m)));
+  assert( last_event );
+  F(write_invoke)(NULL, NULL, (Tv*) m, last_event->value);
+  F(modref_set_events)(m, F(event_enqueue_initial_readers)(NULL, F(events_of_modref)(m)));
+  /* Now the modref is clear. */
+  F(modref_set_lsbs)(m, E(__CLEAR));
+}
 
-  return t;
+static void F(modref_add_to_dirtyset_core)(T(modref)* modref)
+{
+  if( Feedback_flag ) {
+    logg("modref %p", modref);
+    /* Is the first write since the last change-propagation? */
+    if( ! F(modref_is_dirty)(modref) ) {
+      /* Set dirty; add it to the dirtyset. */
+      F(modref_set_dirty)(modref);
+      ceal_dirtyset_core_add(modref, F(modref_discharge_dirty_core));
+    }
+  }
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -533,40 +596,37 @@ static Tv F(read_invoke_)(ceal_trnode_t *trnode, T(readh) *readh, Tv *pointer) {
   if( readh == NULL ) { /* ==> Meta-level read. */
 
     /* Is the modref dirty, or is it clean? */
-    if( F(modref_is_dirty)(modref) ) {
-      /* Semantic Reasoning: The modref is dirty; So, the core
-         computation is inconsistent.  Hence, we should return the
-         most recent write value done at the meta-level (we do not
-         store previous meta-level write values anyway).  We know it
-         exists since otherwise the modref would not be dirty. */
-      T(event)* meta_write = t = F(meta_write_of_events)( t );      
+    if( Feedback_flag ||
+        F(modref_is_dirty)(modref) )
+    {
+      /* Semantic Reasoning:
+
+         Case: We allow feedback; So, the core computation's final
+         state has been reflected back to the meta-level. Hence,
+         reading from the first time-stamp is the same as reading from
+         the last time stamp.
+         
+         Case: The modref is dirty; So, the core computation is
+         inconsistent.  Hence, we should return the most recent write
+         value done at the meta-level (we do not store previous
+         meta-level write values anyway).  We know it exists since
+         otherwise the modref would not be dirty. */
+      T(event)* meta_write = t = F(meta_write_of_events)( t, NULL );
       value = meta_write->value;
     }
     else {
-      /* Semantic Reasoning: The modref is not dirty; So, since we are
-         reading at the meta-level, it must be consistent with the
-         core computation.  Hence, we find the last write (either at
-         meta or core) and return its value. */
-      
-      /* Use this dummy event to search for last event */
-      T(event) last = {
-#ifdef CEAL_DEBUG_MODTYP
-        CEAL_MODTYP_AWAR,
-#endif
-        NULL, NULL, ceal_state->last
-      };
-
-      /* Get the predecessor (relative to the given read handle)
-         It has the current value. */
-      /* NULL-valued read handles request the value "now". */
-      T(event)* succ = t = F(event_succ_of)(t, & last);
+      /* Semantic Reasoning: The modref is not dirty and there is no
+         feedback; So, since we are reading at the meta-level, it must
+         be consistent with the core computation.  Hence, we find the
+         last write (either at meta or core) and return its value. */      
+      T(event)* last = t = F(last_event_of_events)(t);
       
 #ifdef CEAL_DEBUG
-      if(succ == NULL)
+      if(last == NULL)
         assert(!"meta-level read_invoke on empty modref");
 #endif
 
-      value = succ->value;
+      value = last->value;
     }
   }
   else { /* ==> Core-level read. */
@@ -683,31 +743,22 @@ static void F(write_invoke_)(ceal_trnode_t *trnode, T(writeh) *writeh,
        VAS_TRNODE(trnode), writeh,       pointer,    value);
   
   if(writeh == NULL) { /* ==> Meta-level write. */
-
+    uintptr_t meta_write_exists = 0;
+    
     /* Get the meta-level write.
        If NULL, we know that no other events exist yet. */
-    pred = t = F(meta_write_of_events)( t );
+    pred = t = F(meta_write_of_events)( t, & meta_write_exists );
+    pred = meta_write_exists ? pred : NULL;
     
     /* Do we already have a meta-level write event? */
-    if( pred ) { /* Yes. */
+    if( meta_write_exists ) { /* Yes. */
+      logg(FMT_TRNODE        " W  handle %p, pointer %p, value " Fv ": replacing meta-level write, event %p",
+           VAS_TRNODE(trnode), writeh,       pointer,    value,                                    pred);
 
-      if( ceal_state->phase != CEAL_NO_CORE ) {
-        /* Does new value match old value?
-           If not, enqueue all affected readers. */
-        if(pred->value != value) {
-
-          /* Is the first dirty meta-level write since the last
-             change-propagation? */
-          if( ! F(modref_is_dirty)(modref) ) {
-
-            /* Enqueue all the readers. */
-            t = F(event_enqueue_reads)(trnode, F(event_next)(pred));
-
-            /* Set dirty; add it to the dirtyset. */
-            F(modref_set_dirty)(modref);
-            ceal_dirtyset_add(modref, F(modref_clear_dirty));
-          }
-        }
+      /* Does new value match old value?
+         If not, enqueue all affected readers. */
+      if(pred->value != value) {           
+          F(modref_add_to_dirtyset_meta)(modref);
       }
       
       /* Store the new value */
@@ -716,12 +767,16 @@ static void F(write_invoke_)(ceal_trnode_t *trnode, T(writeh) *writeh,
       
     }
     else { /* No. So make one.*/
-
+      
+      /* Logging Pre Conditions */
+      logg(FMT_TRNODE        " W  handle %p, pointer %p, value " Fv ": first meta-level write",
+           VAS_TRNODE(trnode), writeh,       pointer,    value);
+      
 #ifdef CEAL_DEBUG
-      /* Sanity Check: If we are doing a meta-level write, and if no
-         previous meta-level write exists, then no other events exist
-         at all. */
-      assert( F(events_of_modref)(modref) == NULL );
+      /* Sanity Check: If we are doing a meta-level write, and no
+         previous meta-level write exists and if (2) we are not
+         allowing feedback, then no other events exist at all. */
+      assert( Feedback_flag || F(events_of_modref)(modref) == NULL );
 #endif
       
       T(event)* meta_write =
@@ -749,6 +804,11 @@ static void F(write_invoke_)(ceal_trnode_t *trnode, T(writeh) *writeh,
   }
   else { /* ==> Core-level write. */
     
+    /* If this is a feedback modref, then we have to reflect this
+       write value (or some subsequent one) back to the initial
+       meta-level write. */
+    F(modref_add_to_dirtyset_core)(modref);
+        
     /* Get the predecessor (relative to the given read handle)
        It has the current value. */
     pred = t = F(event_pred_of)(t, F(event_set_trnode)(writeh, trnode));
@@ -758,17 +818,17 @@ static void F(write_invoke_)(ceal_trnode_t *trnode, T(writeh) *writeh,
     
     /* Does new value match old value?
        If not, enqueue all affected readers. */
-    if(pred) {
-    
+    if(pred) {    
       pred_value = pred->value;
       
       if( pred->value != value ) {
-      
         /* Get the sucessor of this write, If any. */
         t = F(event_succ_of)(t, writeh);
 
-        /* logg("pred %p, writeh %p, succ %p", pred, writeh, t); */        
-        t = F(event_enqueue_reads)(F(trnode_of_event)(writeh), t);
+        if( t != (T(event)*) writeh /* if a successor exists, then enqueue */ ) {
+          /*logg("pred %p, writeh %p, succ %p", pred, writeh, t);*/
+           t = F(event_enqueue_reads)(F(trnode_of_event)(writeh), t);
+        }
       }
     }
     
@@ -843,6 +903,7 @@ static void F(write_revoke_)(ceal_trnode_t *trnode, T(writeh) *writeh) {
         /* Case 2: */ (pred->value != writeh->value) ) {
       T(event)* succ = F(event_succ_of)(t, writeh);      
       t = F(event_enqueue_reads)(trnode, succ);
+      F(modref_add_to_dirtyset_core)(modref);
     }    
 
     /* Remove the event. */

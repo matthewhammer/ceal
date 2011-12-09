@@ -38,7 +38,7 @@ along with CEAL.  If not, see <http://www.gnu.org/licenses/>.
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* State -- The global state of the CEAL program.
 */
-   
+
 typedef struct ceal_state_s {
   ceal_init_flags_t init_flags;
   
@@ -48,7 +48,7 @@ typedef struct ceal_state_s {
          CEAL_PROPAGATION_RUNNING,
          CEAL_PROPAGATION_COMPLETE,
   } phase;
-
+  
   /* These are fixed (after initialization):  */
 
   ceal_trnode_t* first;
@@ -91,7 +91,15 @@ typedef struct ceal_state_s {
     (the next dirty reader is always known by any dirty thing in
     TDTs).
   */
-  ceal_stack_t*  dirtyset;
+  ceal_stack_t*  dirtyset_meta;
+
+  /* The Core-level dirty set is similar to the Meta-level dirty set,
+     except that it (1) grows during core invocation and
+     revocation--not during meta-level execution, where it is empty,
+     and (2) we use it for a different purpose: to postpone
+     feedback---where (optionally) the final state of the core program
+     is reflected back as its next initial state. */
+  ceal_stack_t*  dirtyset_core;
   
   /* These change: */  
   ceal_time_t*   time_now;
