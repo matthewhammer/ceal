@@ -59,6 +59,7 @@ void print_the_knot() {
 /* If feedback is working correctly, the behavior with CP should be
    equivalent to that without CP. */
 int main(int argc, char*foreign_c* argv) {
+
   int use_cp =
     (argc < 2) || (strcmp("-nocp", argv[1]) != 0);
   
